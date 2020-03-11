@@ -1,4 +1,4 @@
-name := "20200310"
+name := "fpin"
 
 version := "0.1"
 
