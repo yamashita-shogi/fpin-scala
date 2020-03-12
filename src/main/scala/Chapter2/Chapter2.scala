@@ -19,6 +19,17 @@ object Chapter2 {
     go(n, 1)
   }
 
+  private def formatFactorial(n: Int) = {
+    val msg = "The factorial of %d is %d."
+    msg.format(n, factorial(n))
+  }
+
+  // int -> int な関数
+  def formatResult(name: String, n: Int, f: Int => Int) = {
+    val msg = "The %s of %d id %d."
+    msg.format(name, n, f(n))
+  }
+
   // exercise 2.1
   // n番目のフィボナッチ数を取得する再帰関数を記述せよ。
   // 最初の2つのフィボナッチ数は0と1である。n番目の数字は常に前の2つの数字の合計となる。この数列は0、1、1、2、3、5のように始まる。
@@ -38,9 +49,38 @@ object Chapter2 {
     go(2, 0, 1)
   }
 
-  def main(args: Array[String]): Unit =
-    //println(fib(0))
-    (1 to 10).foreach { i =>
-      println("fib %d : %d".format(i, fib(i)))
-    }
+  // 配列内でStringを検索する単相関数
+//  def findFirst(ss: Array[String], key: String): Int = {
+//    println(ss(0))
+//    @annotation.tailrec
+//    def loop(n: Int): Int =
+//      if (n >= ss.length) -1
+//      else if (ss(n) == key) n
+//      else loop(n + 1)
+//
+//    loop(0)
+//  }
+
+  def findFirst[A](as: Array[A], p: A => Boolean): Int = {
+    @annotation.tailrec
+    def loop(n: Int): Int =
+      if (n >= as.length) -1
+      else if (p(as(n))) n
+      else loop(n + 1)
+
+    loop(0)
+  }
+
+  def main(args: Array[String]): Unit = {
+    // exercise 2.1
+    //    (1 to 10).foreach { i =>
+    //      println("fib %d : %d".format(i, fib(i)))
+    //    }
+    //    println(formatAbs(-42))
+    //    println(formatFactorial(7))
+    //println(formatResult("absolute value", -42, abs))
+    //println(formatResult("factroial", 7, factorial))
+    //val arr = Array("a", "b", "c")
+    //println(findFirst(Array("aa", "bb", "cc"), "cc"))
+  }
 }
