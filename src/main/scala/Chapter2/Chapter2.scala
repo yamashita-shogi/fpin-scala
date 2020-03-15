@@ -71,16 +71,44 @@ object Chapter2 {
     loop(0)
   }
 
+  // exercise 2.2
+  def isSorted[A](as: Array[A], ordered: (A, A) => Boolean): Boolean = {
+    //@annotation.tailrec
+    def loop(n: Int): Boolean =
+      if (n >= as.length - 1) true //最後まで回したらtrue
+      else if (!ordered(as(n), as(n + 1)))
+        false //希望の順番じゃなければfalse、!なしの場合はチェックしたい順番と逆の不等号関数にする
+      else loop(n + 1)
+
+    loop(0)
+  }
+
+  // exercise 2.3
+  def curry[A, B, C](f: (A, B) => C): A => (B => C) =
+    (a: A) => ((b: B) => f(a, b))
+
+  // exercise 2.4
+  def uncurry[A, B, C](f: A => B => C): (A, B) => C =
+    (a: A, b: B) => f(a: A)(b: B)
+
+  // exercise 2.5
+  def compose[A, B, C](f: B => C, g: A => B): A => C =
+    (a: A) => f(g(a))
+
   def main(args: Array[String]): Unit = {
     // exercise 2.1
-    //    (1 to 10).foreach { i =>
-    //      println("fib %d : %d".format(i, fib(i)))
-    //    }
-    //    println(formatAbs(-42))
-    //    println(formatFactorial(7))
+//    (1 to 10).foreach { i =,
+//      println("fib %d : %d".format(i, fib(i)))
+//    }
+//    println(formatAbs(-42))
+//    println(formatFactorial(7))
     //println(formatResult("absolute value", -42, abs))
     //println(formatResult("factroial", 7, factorial))
-    //val arr = Array("a", "b", "c")
-    //println(findFirst(Array("aa", "bb", "cc"), "cc"))
+    //println(findFirst(Array("aa", "bb", "cc"), (x: String) => x == "dd")
+
+    // exercise 2.2
+    println(isSorted(Array(1, 2, 3, 4), (x: Int, y: Int) => x < y))
+    println(isSorted(Array(1, 3, 2, 4), (x: Int, y: Int) => x < y))
+    println(isSorted(Array(4, 3, 2, 1), (x: Int, y: Int) => x < y))
   }
 }
