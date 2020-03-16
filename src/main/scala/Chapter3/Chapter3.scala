@@ -7,7 +7,8 @@ object Chapter3 {
   case class Cons[+A](head: A, tail: List[A]) extends List[A] //3
 
   def main(args: Array[String]): Unit = {
-    val r = List.init(List(1, 2, 3, 4, 5))
+    val r = List.dropWhile(List(1, 1, 1, 2, 3, 4, 5), (x: Int) => x == 1)
+    //val r = List.init(List(1, 2, 3, 4, 5))
     println(r)
   }
 
