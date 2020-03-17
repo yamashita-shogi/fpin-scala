@@ -6,12 +6,6 @@ object Chapter3 {
   case object Nil extends List[Nothing] //2
   case class Cons[+A](head: A, tail: List[A]) extends List[A] //3
 
-  def main(args: Array[String]): Unit = {
-    val r = List.dropWhile(List(1, 1, 1, 2, 3, 4, 5), (x: Int) => x == 1)
-    //val r = List.init(List(1, 2, 3, 4, 5))
-    println(r)
-  }
-
   object List { //4
     def sum(ints: List[Int]): Int = ints match { //5
       case Nil         => 0 //6
@@ -92,5 +86,71 @@ object Chapter3 {
 //        case Cons(h, t)   => Cons(h, init(t))
 //      }
 //    }
+
+    // 第1引数と題2引数の型は同じなはず
+    // dropWhileの引数リストを2つのグループにまとめるとscalaが推論できるようになる
+    // dropWhile2(xs)(f)
+    // dropWhile2(xs)が関数を返し、それをfで呼び出す
+    def dropWhile2[A](as:List[A])(f:A=>Boolean):List[A] =
+      as match {
+        case Cons(h,t) if(f(h)) => dropWhile2(t)(f)
+        case _ => as
+      }
+
+    // as = 計算対象リスト
+    // z = 最後何を掛けるか
+    // f = 足し算 or 掛け算する関数
+    def foldRight[A,B](as:List[A],z:B)(f:(A,B) => B):B= {
+      println(as)
+      //println(z)
+      as match {
+        case Nil => z
+        case Cons(x,xs) => f(x,foldRight(xs,z)(f))
+      }
+    }
+
+    def sum2(ns: List[Int]) =
+      foldRight(ns,0)((x,y) => x + y)
+
+    def product2(ns:List[Double]) =
+      foldRight(ns,1.0)(_ * _)
+
+    // exercise 3.9
+    // 模範見ました
+    def length[A](as: List[A]): Int = {
+      println(as)
+      foldRight(as, 0)((_,x) => x + 1)
+    }
+
+    // exercise 3.10
+    @annotation.tailrec
+    def foldLeft[A,B](as: List[A], z: B)(f:(B,A) => B):B = {
+      println(as)
+      as match {
+        case Nil => z
+        case Cons(h,t) => foldLeft(t, f(z,h))(f)
+      }
+    }
+  }
+  def main(args: Array[String]): Unit = {
+    //val r = List.dropWhile(List(1, 1, 1, 2, 3, 4, 5), (x: Int) => x == 1)
+    //val r = List.init(List(1, 2, 3, 4, 5))
+
+//    val rr = List.product2(List(1.0, 2.0,3.0))
+//    println(rr)
+//    println("----")
+//    val rr = List.product2(List(0.0, 2.0,2.0))
+//    println(rr)
+
+//    val r = List.foldRight(List(1,2,3), Nil:List[Int])(_ * _)
+//    println(r)
+
+//    val r = List.foldRight(List(1,2,3), Nil:List[Int])(Cons(_,_))
+//    println(r)
+    //val r = List.length(List(1,2,3))
+    //println(r)
+
+    val r = List.foldLeft(List(1,2,3),0), (x,y) => x+y)
+    println(r)
   }
 }
