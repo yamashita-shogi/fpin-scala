@@ -53,7 +53,7 @@ object Chapter3 {
           case Cons(_, t) => drop(t, n - 1)
         }
 
-    //    // exercise 3.5
+    // exercise 3.5
     // 述語とマッチする場合に限りListからその要素までの要素を削除するdropWhileの実装
     def dropWhile[A](l: List[A], f: A => Boolean): List[A] =
       l match {
@@ -61,7 +61,6 @@ object Chapter3 {
         case Cons(h, t) => if (f(h)) dropWhile(t, f) else l
       }
 
-    // exercise 3.5
     def append[A](a1: List[A], a2: List[A]): List[A] = {
       println(a1)
       a1 match {
@@ -120,7 +119,7 @@ object Chapter3 {
     def length[A](as: List[A]): Int = {
       println(as)
       foldRight(as, 0)((_, x) => x + 1)
-    }
+ ,   }
 
     // exercise 3.10
     @annotation.tailrec
@@ -136,13 +135,13 @@ object Chapter3 {
     //val r = List.dropWhile(List(1, 1, 1, 2, 3, 4, 5), (x: Int) => x == 1)
     //val r = List.init(List(1, 2, 3, 4, 5))
 
-    val rr = List.product2(List(1.0, 2.0, 3.0))
-    println(rr)
+//    val rr = List.product2(List(1.0, 2.0, 3.0))
+//    println(rr)
 //    println("----")
 //    val rr = List.product2(List(0.0, 2.0,2.0))
 //    println(rr)
 
-//    val r = List.foldRight(List(1,2,3), Nil:List[Int])(_ * _)
+//    val r = List.foldRight(List(1, 2, 3), 1)(_ * _)
 //    println(r)
 
 //    val r = List.foldRight(List(1,2,3), Nil:List[Int])(Cons(_,_))
@@ -150,7 +149,7 @@ object Chapter3 {
     //val r = List.length(List(1,2,3))
     //println(r)
 
-//    val r = List.foldLeft(List(1,2,3),0), (x,y) => x+y)
-//    println(r)
+    val rr = List.foldLeft(List(1, 2, 3), 0)(_ * _)
+    println(rr)
   }
 }
