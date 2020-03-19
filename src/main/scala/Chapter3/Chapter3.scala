@@ -132,15 +132,19 @@ object Chapter3 {
     }
 
     def sumLeft(as: List[Int]): Int = {
-      foldLeft(as,0)(_ + _)
+      foldLeft(as, 0)(_ + _)
     }
 
     def productLeft(as: List[Double]): Double = {
-      foldLeft(as,1.0)(_ * _)
+      foldLeft(as, 1.0)(_ * _)
     }
 
-    def curry(f:(a:Int, b:Int) => c:Int): Int => (Int=>Int)
-        a => f(a,b)
+//    def curry(f:(a:Int, b:Int) => c:Int): Int => (Int=>Int)
+//        a => f(a,b)
+
+    def curry[A, B, C](f: (A, B) => C): A => (B => C) = a => b => f(a, b)
+    def f(a: Int, b: Int): Int = a + b
+    def g(a: Int)(b: Int): Int = a + b
 
   }
   def main(args: Array[String]): Unit = {
@@ -152,7 +156,6 @@ object Chapter3 {
 //    println("----")
 //    val rr = List.product2(List(0.0, 2.0,2.0))
 //    println(rr)
-
 
 //    val r = List.foldRight(List(1, 2, 3), 1)(_ * _)
 //    println(r)
@@ -166,7 +169,7 @@ object Chapter3 {
 //    println(rr)
 
 //    println(List.sumLeft(List(5,5,5)))
-    println(List.productLeft(List(5.0,5.0,5.0)))
+    //println(List.productLeft(List(5.0, 5.0, 5.0)))
 
   }
 }
