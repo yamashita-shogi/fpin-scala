@@ -119,7 +119,7 @@ object Chapter3 {
     def length[A](as: List[A]): Int = {
       println(as)
       foldRight(as, 0)((_, x) => x + 1)
- ,   }
+    }
 
     // exercise 3.10
     @annotation.tailrec
@@ -130,6 +130,18 @@ object Chapter3 {
         case Cons(h, t) => foldLeft(t, f(z, h))(f)
       }
     }
+
+    def sumLeft(as: List[Int]): Int = {
+      foldLeft(as,0)(_ + _)
+    }
+
+    def productLeft(as: List[Double]): Double = {
+      foldLeft(as,1.0)(_ * _)
+    }
+
+    def curry(f:(a:Int, b:Int) => c:Int): Int => (Int=>Int)
+        a => f(a,b)
+
   }
   def main(args: Array[String]): Unit = {
     //val r = List.dropWhile(List(1, 1, 1, 2, 3, 4, 5), (x: Int) => x == 1)
@@ -141,6 +153,7 @@ object Chapter3 {
 //    val rr = List.product2(List(0.0, 2.0,2.0))
 //    println(rr)
 
+
 //    val r = List.foldRight(List(1, 2, 3), 1)(_ * _)
 //    println(r)
 
@@ -149,7 +162,11 @@ object Chapter3 {
     //val r = List.length(List(1,2,3))
     //println(r)
 
-    val rr = List.foldLeft(List(1, 2, 3), 0)(_ * _)
-    println(rr)
+//    val rr = List.foldLeft(List(1, 2, 3), 1)(_ * _)
+//    println(rr)
+
+//    println(List.sumLeft(List(5,5,5)))
+    println(List.productLeft(List(5.0,5.0,5.0)))
+
   }
 }
