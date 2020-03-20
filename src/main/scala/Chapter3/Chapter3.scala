@@ -131,6 +131,7 @@ object Chapter3 {
       }
     }
 
+    // exercise 3.11
     def sumLeft(as: List[Int]): Int = {
       foldLeft(as, 0)(_ + _)
     }
@@ -139,12 +140,18 @@ object Chapter3 {
       foldLeft(as, 1.0)(_ * _)
     }
 
-//    def curry(f:(a:Int, b:Int) => c:Int): Int => (Int=>Int)
-//        a => f(a,b)
+    def lengthLeft[A](as: List[A]): Int = {
+      foldLeft(as, 0)((x, _) => x + 1)
+    }
 
-    def curry[A, B, C](f: (A, B) => C): A => (B => C) = a => b => f(a, b)
-    def f(a: Int, b: Int): Int = a + b
-    def g(a: Int)(b: Int): Int = a + b
+    // exercise 3.12
+    def reverse[A](l: List[A]): List[A] = {
+//      l match {
+//        case Cons(h, t) => Cons(t, h)
+//        case _          => l
+//      }
+      foldLeft(l, Nil: List[A])((tail, head) => Cons(head, tail))
+    }
 
   }
   def main(args: Array[String]): Unit = {
@@ -165,11 +172,17 @@ object Chapter3 {
     //val r = List.length(List(1,2,3))
     //println(r)
 
+    // exercise 3.10
 //    val rr = List.foldLeft(List(1, 2, 3), 1)(_ * _)
 //    println(rr)
 
-//    println(List.sumLeft(List(5,5,5)))
+    // exercise 3.11
+    //println(List.sumLeft(List(5, 5, 5)))
     //println(List.productLeft(List(5.0, 5.0, 5.0)))
+    //println(List.lengthLeft(List(1, 2, 3, 4)))
+
+    // exercise 3.12
+    println(List.reverse(List(1, 2, 3)))
 
   }
 }
