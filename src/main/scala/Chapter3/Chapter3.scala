@@ -150,7 +150,67 @@ object Chapter3 {
 //        case Cons(h, t) => Cons(t, h)
 //        case _          => l
 //      }
-      foldLeft(l, Nil: List[A])((tail, head) => Cons(head, tail))
+      foldLeft(l, Nil: List[A])((acc, h) => Cons(h, acc))
+    }
+
+    // exercise 3.13
+    def foldRightViaFoldleft[A,B](l:List[A], z:B)(f:(A,B) => B): B=
+      foldLeft(reverse(l),z)((b,a) => f(a,b))
+
+    def foldRight_1[A,B](l:List[A], z:B)(f:(A,B) => B): B =
+      foldLeft(l, (b:B) => b)((g,a) => b => g(f(a,b)))(z)
+
+    def foldLeftViaFoldRight[A,B](l: List[A], z:B)(f: (B,A) => B): B=
+      foldRight(l, (b:B) => b)((a,g) => b => g(f(b,a)))(z)
+
+    // exercise 3.14
+    def appendLeft1[A](l: List[A], ll: List[A]): List[A] =
+      foldRight(l, ll)(Cons(_,_))
+
+    def appendViaFoldRight[A](l: List[A], r: List[A]): List[A] =
+      foldRight(l, r)(Cons(_,_))
+
+    // exercise 3.15
+    def concat[A](l: List[List[A]]): List[A] =
+      foldRight(l, Nil:List[A])(append)
+
+    // exercise 3.16
+    def add1(l: List[Int]): List[Int] =
+      foldRight(l, Nil:List[Int])((h,t) => Cons(h+1,t))
+
+    // exercise 3.17
+    def doubleToString(l: List[Double]): List[String] =
+      foldRight(l, Nil:List[String])((h,t) => Cons(h.toString,t))
+
+    // exercise 3.18
+    // リストの各要素を変更しかつリストの構造をそのまま保つ総称関数map
+    def map[A,B](l: List[A])(f: A => B): List[B] =
+      foldRight(l, Nil:List[B])((h,t) => Cons(f(h),t))
+
+    // exercise 3.19
+    def filter[A](l: List[A])(f:A=>Boolean): List[A] =
+      foldRight(l,Nil:List[A])((h,t) => if (f(h)) Cons(h,t) else t)
+
+    // exercise 3.20
+    def flatMap[A,B](l:List[A])(f: A=> List[B]):List[B]=
+      concat(map(l)(f))
+
+    // exercise 3.21
+    def filterViaFlatMap[A](l: List[A])(f:A=>Boolean): List[A] =
+      flatMap(l)(a => if (f(a)) List(a) else Nil)
+
+    // exercise 3.22
+    def addPairwise(a:List[Int], b: List[Int]): List[Int] = (a,b) match {
+      case (Nil,_) => Nil
+      case (_,Nil) => Nil
+      case (Cons(h1,t1), Cons(h2,t2)) => Cons(h1+h2, addPairwise(t1,t2))
+    }
+
+    // exercise 3.23
+    def zipWith[A,B,C](a:List[A], b:List[B])(f: (A,B) => C): List[C] = (a,b) match {
+      case (Nil,_) => Nil
+      case (_, Nil) => Nil
+      case (Cons(h1,t1), Cons(h2,t2)) => Cons(f(h1,h2), zipWith(t1,t2)(f))
     }
 
   }
@@ -184,5 +244,9 @@ object Chapter3 {
     // exercise 3.12
     println(List.reverse(List(1, 2, 3)))
 
+    //println(List.appendLeft(List(1,2,3),List(4,5,6)))
+    //println(List.appendViaFoldRight(List(1,2,3),List(4,5,6)))
+
+//    println(List.add1(List(1,2,3)))
   }
 }
