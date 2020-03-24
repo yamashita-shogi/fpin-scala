@@ -242,7 +242,7 @@ object Chapter3 {
     //println(List.lengthLeft(List(1, 2, 3, 4)))
 
     // exercise 3.12
-//    println(List.reverse(List(1, 2, 3)))
+    println(List.reverse(List(1, 2, 3)))
 
     //println(List.appendLeft(List(1,2,3),List(4,5,6)))
     //println(List.appendViaFoldRight(List(1,2,3),List(4,5,6)))
