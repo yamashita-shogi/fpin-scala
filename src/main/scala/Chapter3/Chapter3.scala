@@ -1,6 +1,6 @@
 package Chapter3
 
-object Chapter3 {
+object Chapter3{
 
   sealed trait List[+A] //1
   case object Nil extends List[Nothing] //2

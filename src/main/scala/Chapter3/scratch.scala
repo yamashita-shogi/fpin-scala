@@ -150,6 +150,10 @@ object scratch {
       foldLeft(reverse(l), ll)((acc, h) => Cons(h, acc))
     }
 
+    // exercise 3.15
+    def concat[A](l: List[List[A]]): List[A] =
+      foldRight(l, Nil: List[A])(append)
+
   }
   def main(args: Array[String]): Unit = {
     //val r = List.dropWhile(List(1, 1, 1, 2, 3, 4, 5), (x: Int) => x == 1)
@@ -179,7 +183,8 @@ object scratch {
     //println(List.lengthLeft(List(1, 2, 3, 4)))
 
 //    println("main = ", List.appendRight(List(1, 2, 3), List(4, 5, 6)))
-    println("main = ", List.appendLeft(List(1, 2, 3), List(4, 5, 6)))
+//    println("main = ", List.appendLeft(List(1, 2, 3), List(4, 5, 6)))
+
 
   }
 }
