@@ -1,6 +1,6 @@
 package Chapter3
 
-object Chapter3{
+object Chapter3 {
 
   sealed trait List[+A] //1
   case object Nil extends List[Nothing] //2
@@ -182,8 +182,11 @@ object Chapter3{
     def concat[A](l: List[List[A]]): List[A] =
       foldRight(l, Nil: List[A])(append)
 
+//    // exercise 3.16
+//    def add1(l: List[Int]): List[Int] =
+//      foldRight(l, Nil: List[Int])((h, t) => Cons(h + 1, t))
     // exercise 3.16
-    def add1(l: List[Int]): List[Int] =
+    def plus_one(l: List[Int]): List[Int] =
       foldRight(l, Nil: List[Int])((h, t) => Cons(h + 1, t))
 
     // exercise 3.17
