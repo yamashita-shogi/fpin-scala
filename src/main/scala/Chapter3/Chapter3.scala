@@ -218,9 +218,12 @@ object Chapter3 {
     def flatMap[A, B](as: List[A])(f: A => List[B]): List[B] =
       foldRight(as, Nil: List[B])((h, t) => append(f(h), t))
 
-    // exercise 3.21
-    def filterViaFlatMap[A](l: List[A])(f: A => Boolean): List[A] =
-      flatMap(l)(a => if (f(a)) List(a) else Nil)
+//    // exercise 3.21
+//    def filterViaFlatMap[A](l: List[A])(f: A => Boolean): List[A] =
+//      flatMap(l)(a => if (f(a)) List(a) else Nil)
+    // exersice 3.21
+    def filter_flatMap[A](as: List[A])(f: A => Boolean): List[A] =
+      flatMap(as)(h => if (f(h)) List(h) else Nil)
 
     // exercise 3.22
     def addPairwise(a: List[Int], b: List[Int]): List[Int] = (a, b) match {

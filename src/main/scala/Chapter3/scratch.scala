@@ -173,6 +173,13 @@ object scratch {
     def flatMap[A, B](as: List[A])(f: A => List[B]): List[B] =
       foldRight(as, Nil: List[B])((h, t) => append(f(h), t))
 
+    // exersice 3.21
+    def filter_flatMap[A](as: List[A])(f: A => Boolean): List[A] =
+      flatMap(as)(h => if (f(h)) List(h) else Nil)
+
+    // 3.22
+    def sumListElement(l: List[Int], ll: List[Int]) =
+
   }
   def main(args: Array[String]): Unit = {
     //val r = List.dropWhile(List(1, 1, 1, 2, 3, 4, 5), (x: Int) => x == 1)
