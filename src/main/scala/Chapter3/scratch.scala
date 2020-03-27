@@ -1,7 +1,5 @@
 package Chapter3
 
-//ここでテスト
-
 object scratch {
 
   sealed trait List[+A] //1
@@ -158,6 +156,23 @@ object scratch {
     def plus_one(l: List[Int]): List[Int] =
       foldRight(l, Nil: List[Int])((h, t) => Cons(h + 1, t))
     //foldLeft(l, Nil: List[Int])((acc, h) => (acc, h + 1))
+
+    // exercise 3.17
+    def doubleToString(l: List[Double]): List[String] =
+      foldRight(l, Nil: List[String])((d, t) => Cons(d.toString, t))
+
+    // exercise 3.18
+    def map[A, B](as: List[A])(f: A => B): List[B] =
+      foldRight(as, Nil: List[B])((h, t) => Cons(f(h), t))
+
+    // exercise 3.19
+    def filter[A](as: List[A])(f: A => Boolean): List[A] =
+      foldRight(as, Nil: List[A])((h, t) => if (f(h)) Cons(h, t) else t)
+
+    // exercise 3.20
+    def flatMap[A, B](as: List[A])(f: A => List[B]): List[B] =
+      foldRight(as, Nil: List[B])((h, t) => append(f(h), t))
+
   }
   def main(args: Array[String]): Unit = {
     //val r = List.dropWhile(List(1, 1, 1, 2, 3, 4, 5), (x: Int) => x == 1)
@@ -186,9 +201,10 @@ object scratch {
     //println(List.productLeft(List(5.0, 5.0, 5.0)))
     //println(List.lengthLeft(List(1, 2, 3, 4)))
 
-//    println("main = ", List.appendRight(List(1, 2, 3), List(4, 5, 6)))
-//    println("main = ", List.appendLeft(List(1, 2, 3), List(4, 5, 6)))
-    println("main = ", List.plus_one(List(1, 2, 3)))
-
+    //    println("main = ", List.appendRight(List(1, 2, 3), List(4, 5, 6)))
+    //    println("main = ", List.appendLeft(List(1, 2, 3), List(4, 5, 6)))
+    //println("main = ", List.plus_one(List(1, 2, 3)))
+    //println("main = ", List.doubleToString(List(1.0, 2.0, 3.0)))
+    println("main = ", List.flatMap(List(1, 2, 3))(i => List(i, i)))
   }
 }

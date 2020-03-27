@@ -182,29 +182,41 @@ object Chapter3 {
     def concat[A](l: List[List[A]]): List[A] =
       foldRight(l, Nil: List[A])(append)
 
-//    // exercise 3.16
+//    // exercise 3.16 模範
 //    def add1(l: List[Int]): List[Int] =
 //      foldRight(l, Nil: List[Int])((h, t) => Cons(h + 1, t))
     // exercise 3.16
     def plus_one(l: List[Int]): List[Int] =
       foldRight(l, Nil: List[Int])((h, t) => Cons(h + 1, t))
 
+//    // exercise 3.17 模範
+//    def doubleToString(l: List[Double]): List[String] =
+//      foldRight(l, Nil: List[String])((h, t) => Cons(h.toString, t))
     // exercise 3.17
     def doubleToString(l: List[Double]): List[String] =
-      foldRight(l, Nil: List[String])((h, t) => Cons(h.toString, t))
+      foldRight(l, Nil: List[String])((d, t) => Cons(d.toString, t))
 
+//    // exercise 3.18
+//    // リストの各要素を変更しかつリストの構造をそのまま保つ総称関数map
+//    def map[A, B](l: List[A])(f: A => B): List[B] =
+//      foldRight(l, Nil: List[B])((h, t) => Cons(f(h), t))
     // exercise 3.18
-    // リストの各要素を変更しかつリストの構造をそのまま保つ総称関数map
-    def map[A, B](l: List[A])(f: A => B): List[B] =
-      foldRight(l, Nil: List[B])((h, t) => Cons(f(h), t))
+    def map[A, B](as: List[A])(f: A => B): List[B] =
+      foldRight(as, Nil: List[B])((h, t) => Cons(f(h), t))
 
+//    // exercise 3.19 模範
+//    def filter[A](l: List[A])(f: A => Boolean): List[A] =
+//      foldRight(l, Nil: List[A])((h, t) => if (f(h)) Cons(h, t) else t)
     // exercise 3.19
-    def filter[A](l: List[A])(f: A => Boolean): List[A] =
-      foldRight(l, Nil: List[A])((h, t) => if (f(h)) Cons(h, t) else t)
+    def filter[A](as: List[A])(f: A => Boolean): List[A] =
+      foldRight(as, Nil: List[A])((h, t) => if (f(h)) Cons(h, t) else t)
 
+//    // exercise 3.20
+//    def flatMap[A, B](l: List[A])(f: A => List[B]): List[B] =
+//      concat(map(l)(f))
     // exercise 3.20
-    def flatMap[A, B](l: List[A])(f: A => List[B]): List[B] =
-      concat(map(l)(f))
+    def flatMap[A, B](as: List[A])(f: A => List[B]): List[B] =
+      foldRight(as, Nil: List[B])((h, t) => append(f(h), t))
 
     // exercise 3.21
     def filterViaFlatMap[A](l: List[A])(f: A => Boolean): List[A] =
@@ -254,11 +266,14 @@ object Chapter3 {
     //println(List.lengthLeft(List(1, 2, 3, 4)))
 
     // exercise 3.12
-    println(List.reverse(List(1, 2, 3)))
+    //println(List.reverse(List(1, 2, 3)))
 
     //println(List.appendLeft(List(1,2,3),List(4,5,6)))
     //println(List.appendViaFoldRight(List(1,2,3),List(4,5,6)))
 
 //    println(List.add1(List(1,2,3)))
+    //println("main = ", List.plus_one(List(1, 2, 3)))
+    println("main = ", List.doubleToString(List(1.0, 2.0, 3.0)))
+
   }
 }
