@@ -178,7 +178,33 @@ object scratch {
       flatMap(as)(h => if (f(h)) List(h) else Nil)
 
     // 3.22
-    def sumListElement(l: List[Int], ll: List[Int]) =
+    // 前までの流れからfold〜とか以前に作った関数使うかと思ってた…
+    def sumListElem(l: List[Int], ll: List[Int]): List[Int] = {
+      (l, ll) match {
+        case (Nil, Nil)                   => Nil
+        case (Cons(h1, t1), Cons(h2, t2)) => Cons(h1 + h2, sumListElem(t1, t2))
+      }
+    }
+
+    def zipWith[A, B, C](l: List[A], ll: List[B])(f: (A, B) => C): List[C] = {
+      (l, ll) match {
+        case (Nil, _)                     => Nil
+        case (_, Nil)                     => Nil
+        case (Cons(h1, t1), Cons(h2, t2)) => Cons(f(h1, h2), zipWith(t1, t2)(f))
+      }
+    }
+
+    def zipWith2[A](l: List[A], ll: List[A])(f: (A, A) => A): List[A] = {
+      (l, ll) match {
+        case (Nil, _)                     => Nil
+        case (_, Nil)                     => Nil
+        case (Cons(h1, t1), Cons(h2, t2)) => Cons(f(h1, h2), zipWith(t1, t2)(f))
+      }
+    }
+
+    def f[A, B](as: List[A])(f: A => Boolean): List[A] = {
+      flatMap(as)(i => if (f(i)) List(i) else Nil)
+    }
 
   }
   def main(args: Array[String]): Unit = {
@@ -212,6 +238,8 @@ object scratch {
     //    println("main = ", List.appendLeft(List(1, 2, 3), List(4, 5, 6)))
     //println("main = ", List.plus_one(List(1, 2, 3)))
     //println("main = ", List.doubleToString(List(1.0, 2.0, 3.0)))
-    println("main = ", List.flatMap(List(1, 2, 3))(i => List(i, i)))
+    //println("main = ", List.flatMap(List(1, 2, 3))(i => List(i, i)))
+
+    //println("main = ", List.sumListElem(List(1, 2, 3), List(4, 5, 6)))
   }
 }
