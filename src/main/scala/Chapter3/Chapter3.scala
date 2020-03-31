@@ -284,7 +284,9 @@ object Chapter3 {
 
 //    println(List.add1(List(1,2,3)))
     //println("main = ", List.plus_one(List(1, 2, 3)))
-    println("main = ", List.doubleToString(List(1.0, 2.0, 3.0)))
+    //println("main = ", List.doubleToString(List(1.0, 2.0, 3.0)))
+    //println("main = ", List.concat(List(List(1, 2, 3), List(4, 5, 6))))
+    println("main = ", List.filter(List(1, 2, 3, 4))(x => x % 2 == 0))
 
   }
 }

@@ -241,5 +241,6 @@ object scratch {
     //println("main = ", List.flatMap(List(1, 2, 3))(i => List(i, i)))
 
     //println("main = ", List.sumListElem(List(1, 2, 3), List(4, 5, 6)))
+    println("main = ", List.filter(List(1, 2, 3, 4))(x => x % 2 == 0))
   }
 }
