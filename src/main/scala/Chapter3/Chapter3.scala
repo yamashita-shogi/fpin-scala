@@ -236,22 +236,72 @@ object Chapter3 {
 //      case (Cons(h1, t1), Cons(h2, t2)) => Cons(h1 + h2, addPairwise(t1, t2))
 //    }
     // 3.22
-    // 前までの流れからfold〜とか以前に作った関数使うかと思ってた…
+//    // 前までの流れからfold〜とか以前に作った関数使うかと思ってた…
+//    def sumListElem(l: List[Int], ll: List[Int]): List[Int] = {
+//      (l, ll) match {
+//        case (Nil, Nil)                   => Nil
+//        case (Cons(h1, t1), Cons(h2, t2)) => Cons(h1 + h2, sumListElem(t1, t2))
+//      }
+//    }
+    // 処理の毛色が急に変わったので、少し答え見て。
     def sumListElem(l: List[Int], ll: List[Int]): List[Int] = {
       (l, ll) match {
-        case (Nil, Nil)                   => Nil
+        case (Nil, _)                     => Nil
+        case (_, Nil)                     => Nil
         case (Cons(h1, t1), Cons(h2, t2)) => Cons(h1 + h2, sumListElem(t1, t2))
       }
     }
 
-    // exercise 3.23
-    def zipWith[A, B, C](a: List[A], b: List[B])(f: (A, B) => C): List[C] =
-      (a, b) match {
+//    // exercise 3.23
+//    def zipWith[A, B, C](a: List[A], b: List[B])(f: (A, B) => C): List[C] =
+//      (a, b) match {
+//        case (Nil, _)                     => Nil
+//        case (_, Nil)                     => Nil
+//        case (Cons(h1, t1), Cons(h2, t2)) => Cons(f(h1, h2), zipWith(t1, t2)(f))
+//      }
+    // これだとどうなのか
+    def zipWith[A](l: List[A], ll: List[A])(f: (A, A) => A): List[A] = {
+      (l, ll) match {
         case (Nil, _)                     => Nil
         case (_, Nil)                     => Nil
         case (Cons(h1, t1), Cons(h2, t2)) => Cons(f(h1, h2), zipWith(t1, t2)(f))
       }
+    }
 
+    // exercise 3.24
+    @annotation.tailrec
+    def startsWith[A](l: List[A], prefix: List[A]): Boolean = {
+      println(l, prefix)
+      (l, prefix) match {
+        case (_, Nil)                              => true
+        case (Cons(h, t), Cons(h2, t2)) if h == h2 => startsWith(t, t2)
+        case _                                     => false
+      }
+    }
+
+    @annotation.tailrec
+    def hasSubsequence[A](sup: List[A], sub: List[A]): Boolean = {
+
+      sup match {
+        case Nil                       => sub == Nil
+        case _ if startsWith(sup, sub) => true
+        case Cons(h, t)                => hasSubsequence(t, sub)
+      }
+    }
+  }
+  object Tree {
+    //exercise 3.25
+    //    def size[A](t: Tree[A]): Int = {
+    //      t match {
+    //        case Branch(left, _)  => size(left)
+    //        case Branch(_, right) => size(right)
+    //        case Leaf(_)          => 1
+    //      }
+    //    }
+    def size[A](t: Tree[A]): Int = t match {
+      case Leaf(_)      => 1
+      case Branch(l, r) => 1 + size(l) + size(r)
+    }
   }
   def main(args: Array[String]): Unit = {
     //val r = List.dropWhile(List(1, 1, 1, 2, 3, 4, 5), (x: Int) => x == 1)
@@ -290,7 +340,10 @@ object Chapter3 {
     //println("main = ", List.plus_one(List(1, 2, 3)))
     //println("main = ", List.doubleToString(List(1.0, 2.0, 3.0)))
     //println("main = ", List.concat(List(List(1, 2, 3), List(4, 5, 6))))
-    println("main = ", List.filter(List(1, 2, 3, 4))(x => x % 2 == 0))
+    //println("main = ", List.filter(List(1, 2, 3, 4))(x => x % 2 == 0))
+
+    // exercise 3.25
+    println(Tree.size(Branch(Branch(Leaf(1), Leaf(2)), Leaf(3))))
 
   }
 }

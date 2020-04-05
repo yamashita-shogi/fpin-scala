@@ -177,7 +177,7 @@ object scratch {
     def flatMap[A, B](as: List[A])(f: A => List[B]): List[B] =
       foldRight(as, Nil: List[B])((h, t) => append(f(h), t))
 
-    // exersice 3.21
+    // exercise 3.21
     def filter_flatMap[A](as: List[A])(f: A => Boolean): List[A] =
       flatMap(as)(h => if (f(h)) List(h) else Nil)
 
@@ -231,9 +231,8 @@ object scratch {
     }
   }
 
-  @annotation.tailrec
   object Tree {
-    //exersice 3.25
+    //exercise 3.25
 //    def size[A](t: Tree[A]): Int = {
 //      t match {
 //        case Branch(left, _)  => size(left)
@@ -292,6 +291,7 @@ object scratch {
 //    // exercise 3.24
 //    println("main = ", List.hasSubsequence(List(1, 2, 3, 4), List(1, 2)))
 
+    // exercise 3.25
     println(Tree.size(Branch(Branch(Leaf(1), Leaf(2)), Leaf(3))))
   }
 }
