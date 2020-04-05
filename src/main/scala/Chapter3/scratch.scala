@@ -6,6 +6,10 @@ object scratch {
   case object Nil extends List[Nothing] //2
   case class Cons[+A](head: A, tail: List[A]) extends List[A] //3
 
+  sealed trait Tree[+A]
+  case class Leaf[A](value: A) extends Tree[A]
+  case class Branch[A](left: Tree[A], right: Tree[A]) extends Tree[A]
+
   object List { //4
     def sum(ints: List[Int]): Int = ints match { //5
       case Nil         => 0 //6
@@ -202,11 +206,47 @@ object scratch {
       }
     }
 
-    def f[A, B](as: List[A])(f: A => Boolean): List[A] = {
+    def filter_flatMap_revange[A, B](as: List[A])(f: A => Boolean): List[A] = {
       flatMap(as)(i => if (f(i)) List(i) else Nil)
     }
 
+    @annotation.tailrec
+    def startsWith[A](l: List[A], prefix: List[A]): Boolean = {
+      println(l, prefix)
+      (l, prefix) match {
+        case (_, Nil)                              => true
+        case (Cons(h, t), Cons(h2, t2)) if h == h2 => startsWith(t, t2)
+        case _                                     => false
+      }
+    }
+
+    @annotation.tailrec
+    def hasSubsequence[A](sup: List[A], sub: List[A]): Boolean = {
+
+      sup match {
+        case Nil                       => sub == Nil
+        case _ if startsWith(sup, sub) => true
+        case Cons(h, t)                => hasSubsequence(t, sub)
+      }
+    }
   }
+
+  @annotation.tailrec
+  object Tree {
+    //exersice 3.25
+//    def size[A](t: Tree[A]): Int = {
+//      t match {
+//        case Branch(left, _)  => size(left)
+//        case Branch(_, right) => size(right)
+//        case Leaf(_)          => 1
+//      }
+//    }
+    def size[A](t: Tree[A]): Int = t match {
+      case Leaf(_)      => 1
+      case Branch(l, r) => 1 + size(l) + size(r)
+    }
+  }
+
   def main(args: Array[String]): Unit = {
     //val r = List.dropWhile(List(1, 1, 1, 2, 3, 4, 5), (x: Int) => x == 1)
     //val r = List.init(List(1, 2, 3, 4, 5))
@@ -241,6 +281,17 @@ object scratch {
     //println("main = ", List.flatMap(List(1, 2, 3))(i => List(i, i)))
 
     //println("main = ", List.sumListElem(List(1, 2, 3), List(4, 5, 6)))
-    println("main = ", List.filter(List(1, 2, 3, 4))(x => x % 2 == 0))
+    //println("main = ", List.filter(List(1, 2, 3, 4))(x => x % 2 == 0))
+
+//    // exersice 3.23
+//    println(
+//      "main = ",
+//      List.zipWith(List(1, 2, 3), List(4, 5, 6))(_.toString + _.toString)
+//    )
+//
+//    // exercise 3.24
+//    println("main = ", List.hasSubsequence(List(1, 2, 3, 4), List(1, 2)))
+
+    println(Tree.size(Branch(Branch(Leaf(1), Leaf(2)), Leaf(3))))
   }
 }

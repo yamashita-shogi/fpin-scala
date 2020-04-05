@@ -6,6 +6,10 @@ object Chapter3 {
   case object Nil extends List[Nothing] //2
   case class Cons[+A](head: A, tail: List[A]) extends List[A] //3
 
+  sealed trait Tree[+A]
+  case class Leaf[A](value: A) extends Tree[A]
+  case class Branch[A](left: Tree[A], right: Tree[A]) extends Tree[A]
+
   object List { //4
     def sum(ints: List[Int]): Int = ints match { //5
       case Nil         => 0 //6
