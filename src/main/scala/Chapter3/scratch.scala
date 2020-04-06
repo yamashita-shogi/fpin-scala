@@ -232,7 +232,7 @@ object scratch {
   }
 
   object Tree {
-    //exercise 3.25
+    // exercise 3.25
 //    def size[A](t: Tree[A]): Int = {
 //      t match {
 //        case Branch(left, _)  => size(left)
@@ -243,6 +243,24 @@ object scratch {
     def size[A](t: Tree[A]): Int = t match {
       case Leaf(_)      => 1
       case Branch(l, r) => 1 + size(l) + size(r)
+    }
+
+    // exercise 3.26
+    def maximum(t: Tree[Int]): Int = {
+      println(t)
+      t match {
+        case Leaf(x)      => x
+        case Branch(l, r) => maximum(l).max(maximum(r))
+      }
+    }
+
+    // exercise 3.26
+    def depth(t: Tree[Int]): Int = {
+      println(t)
+      t match {
+        case Leaf(_)      => 0
+        case Branch(l, r) => 1 + depth(l).max(depth(r))
+      }
     }
   }
 
@@ -291,7 +309,17 @@ object scratch {
 //    // exercise 3.24
 //    println("main = ", List.hasSubsequence(List(1, 2, 3, 4), List(1, 2)))
 
-    // exercise 3.25
-    println(Tree.size(Branch(Branch(Leaf(1), Leaf(2)), Leaf(3))))
+//    // exercise 3.25
+//    println(Tree.size(Branch(Branch(Leaf(1), Leaf(2)), Leaf(3))))
+
+//    // exercise 3.26
+//    println(
+//      Tree.maximum(Branch(Branch(Leaf(1), Leaf(2)), Branch(Leaf(3), Leaf(4))))
+//    )
+
+    // exercise 3.27
+    println(
+      Tree.depth(Branch(Branch(Leaf(1), Leaf(2)), Branch(Leaf(3), Leaf(4))))
+    )
   }
 }
