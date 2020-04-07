@@ -254,7 +254,7 @@ object scratch {
       }
     }
 
-    // exercise 3.26
+    // exercise 3.27
     def depth(t: Tree[Int]): Int = {
       println(t)
       t match {
@@ -262,6 +262,37 @@ object scratch {
         case Branch(l, r) => 1 + depth(l).max(depth(r))
       }
     }
+
+    // exercise 3.28
+    def map[A, B](t: Tree[A])(f: A => B): Tree[B] = {
+      t match {
+        case Leaf(x)      => Leaf(f(x))
+        case Branch(l, r) => Branch(map(l)(f), map(r)(f))
+      }
+    }
+
+    // exercise 3.29
+    def fold[A, B](t: Tree[A])(f: A => B)(g: (B, B) => B): B = {
+      t match {
+        case Leaf(x)      => f(x)
+        case Branch(l, r) => g(fold(l)(f)(g), fold(r)(f)(g))
+      }
+    }
+
+    def size_2[A, B](t: Tree[A]): Int = {
+      fold(t)(_ => 1)(1 + _ + _)
+    }
+
+    def maximum_2(t: Tree[Int]): Int = {
+      fold(t)(a => a)((x, y) => x.max(y))
+    }
+
+    def depth_2[A](t: Tree[A]): Int = {
+      fold(t)(_ => 0)((x, y) => 1 + x.max(y))
+    }
+
+    def map_2[A, B](t: Tree[A])(f: A => B): Tree[B] =
+      fold(t)(a => Leaf(f(a)): Tree[B])(Branch(_, _))
   }
 
   def main(args: Array[String]): Unit = {
@@ -300,7 +331,7 @@ object scratch {
     //println("main = ", List.sumListElem(List(1, 2, 3), List(4, 5, 6)))
     //println("main = ", List.filter(List(1, 2, 3, 4))(x => x % 2 == 0))
 
-//    // exersice 3.23
+//    // exercise 3.23
 //    println(
 //      "main = ",
 //      List.zipWith(List(1, 2, 3), List(4, 5, 6))(_.toString + _.toString)
@@ -309,6 +340,7 @@ object scratch {
 //    // exercise 3.24
 //    println("main = ", List.hasSubsequence(List(1, 2, 3, 4), List(1, 2)))
 
+    val t = Branch(Branch(Leaf(1), Leaf(2)), Leaf(3))
 //    // exercise 3.25
 //    println(Tree.size(Branch(Branch(Leaf(1), Leaf(2)), Leaf(3))))
 
@@ -316,10 +348,17 @@ object scratch {
 //    println(
 //      Tree.maximum(Branch(Branch(Leaf(1), Leaf(2)), Branch(Leaf(3), Leaf(4))))
 //    )
+    // println(Tree.maximum(t))
 
-    // exercise 3.27
-    println(
-      Tree.depth(Branch(Branch(Leaf(1), Leaf(2)), Branch(Leaf(3), Leaf(4))))
-    )
+//    // exercise 3.27
+//    println(
+//      Tree.depth(Branch(Branch(Leaf(1), Leaf(2)), Branch(Leaf(3), Leaf(4))))
+//    )
+
+//    // exercise 3.28
+//    println(Tree.map(Branch(Branch(Leaf(1), Leaf(2)), Leaf(3)))(_ * 2))
+
+    // exercise 3.29
+    println(Tree.size(t))
   }
 }
