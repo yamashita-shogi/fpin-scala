@@ -302,6 +302,55 @@ object Chapter3 {
       case Leaf(_)      => 1
       case Branch(l, r) => 1 + size(l) + size(r)
     }
+
+    // exercise 3.26
+    def maximum(t: Tree[Int]): Int = {
+      println(t)
+      t match {
+        case Leaf(x)      => x
+        case Branch(l, r) => maximum(l).max(maximum(r))
+      }
+    }
+
+    // exercise 3.27
+    def depth(t: Tree[Int]): Int = {
+      println(t)
+      t match {
+        case Leaf(_)      => 0
+        case Branch(l, r) => 1 + depth(l).max(depth(r))
+      }
+    }
+
+    // exercise 3.28
+    def map[A, B](t: Tree[A])(f: A => B): Tree[B] = {
+      t match {
+        case Leaf(x)      => Leaf(f(x))
+        case Branch(l, r) => Branch(map(l)(f), map(r)(f))
+      }
+    }
+
+    // exercise 3.29
+    def fold[A, B](t: Tree[A])(f: A => B)(g: (B, B) => B): B = {
+      t match {
+        case Leaf(x)      => f(x)
+        case Branch(l, r) => g(fold(l)(f)(g), fold(r)(f)(g))
+      }
+    }
+
+    def size_2[A, B](t: Tree[A]): Int = {
+      fold(t)(_ => 1)(1 + _ + _)
+    }
+
+    def maximum_2(t: Tree[Int]): Int = {
+      fold(t)(a => a)((x, y) => x.max(y))
+    }
+
+    def depth_2[A](t: Tree[A]): Int = {
+      fold(t)(_ => 0)((x, y) => 1 + x.max(y))
+    }
+
+    def map_2[A, B](t: Tree[A])(f: A => B): Tree[B] =
+      fold(t)(a => Leaf(f(a)): Tree[B])(Branch(_, _))
   }
   def main(args: Array[String]): Unit = {
     //val r = List.dropWhile(List(1, 1, 1, 2, 3, 4, 5), (x: Int) => x == 1)
