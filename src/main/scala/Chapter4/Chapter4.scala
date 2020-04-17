@@ -3,6 +3,7 @@ package Chapter4
 object Chapter4 {
 
   sealed trait Option[+A] {
+
     def map[B](f: A => B): Option[B] = this match {
       case None    => None
       case Some(a) => Some(f(a))
@@ -13,7 +14,8 @@ object Chapter4 {
       case Some(a) => a
     }
 
-    def flatMap[B](f: A => Option[B]): Option[B] = map(f) getOrElse None
+    def flatMap[B](f: A => Option[B]): Option[B] =
+      map(f) getOrElse None
 
     def orElse[B >: A](ob: => Option[B]): Option[B] = this match {
       case None    => ob
@@ -74,10 +76,21 @@ object Chapter4 {
 
     def map2[A, B, C](a: Option[A], b: Option[B])(f: (A, B) => C): Option[C] =
       a.flatMap(ax => b.map(bx => f(ax, bx)))
+
+//    def sequence2[A](a: List[Option[A]]): Option[List[A]] =
+//      a.foldRight()
+
+    def sequence(a: List[Option[A]]): Option[List[A]] = a match {
+      case Nil    => Some(Nil)
+      case h :: t => h flatMap (hh => sequence(t) map (hh :: _))
+    }
   }
 
   def main(args: Array[String]): Unit = {
-    println("a")
-    //Option.variance(Seq[1.0, 2.0])
+    //println("a")
+    //println(Some(1.0), Some(2.0).map(_.toString))
+
+    //println(Option.map2(Some(1), Some(2))((x, y) => x + y))
+    println(Option.sequence(List(Some(1), Some(2), Some(3), Some(4))))
   }
 }
