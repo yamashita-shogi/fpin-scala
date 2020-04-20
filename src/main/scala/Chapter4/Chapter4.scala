@@ -80,11 +80,21 @@ object Chapter4 {
 //    def sequence2[A](a: List[Option[A]]): Option[List[A]] =
 //      a.foldRight()
 
-    def sequence(a: List[Option[A]]): Option[List[A]] = a match {
+    def sequence[A](a: List[Option[A]]): Option[List[A]] = a match {
       case Nil    => Some(Nil)
       case h :: t => h flatMap (hh => sequence(t) map (hh :: _))
     }
+
+    def traverse[A, B](a: List[A])(f: A => Option[B]): Option[List[B]] =
+      a match {
+        case Nil    => Some(Nil)
+        case h :: t => f(h).flatMap(hh => traverse(t)(f) map (hh :: _))
+      }
   }
+
+  sealed trait Either[+E, +A]
+  case class Left[+E](value: E) extends Either[E, Nothing]
+  case class Right[+A](value: A) extends Either[Nothing, A]
 
   def main(args: Array[String]): Unit = {
     //println("a")
