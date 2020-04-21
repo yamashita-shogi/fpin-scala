@@ -99,7 +99,7 @@ object Chapter4 {
         case Right(a) => Right(f(a))
       }
 
-    def flatMap2[EE >: E, B](f: A => Either[EE, B]): Either[EE, B] =
+    def flatMap[EE >: E, B](f: A => Either[EE, B]): Either[EE, B] =
       this match {
         case Left(a)  => Left(a)
         case Right(a) => f(a)
@@ -111,17 +111,14 @@ object Chapter4 {
         case Right(a) => Right(a)
       }
 
-    def map1[EE >: E, B, C](b: Either[EE, B])(f: (A, B) => C): Either[EE, C] =
-      this.flatMap2(tt => b.map(bb => f(tt, bb)))
+    def map2_1[EE >: E, B, C](b: Either[EE, B])(f: (A, B) => C): Either[EE, C] =
+      this.flatMap(tt => b.map(bb => f(tt, bb)))
 
-//    def map2[EE >: E, B, C](b: Either[EE, B])(f: (A, B) => C): Either[EE, C] =
-//      for {
-//        a <- this
-//        b1 <- b
-//      } yield f(a, b1)
-
-//    def map3[EE >: E, B, C](b: Either[EE, B])(f: (A, B) => C): Either[EE, C] =
-//      for { a <- this; b1 <- b } yield f(a, b1)
+    def map2[EE >: E, B, C](b: Either[EE, B])(f: (A, B) => C): Either[EE, C] =
+      for {
+        a <- this;
+        b1 <- b
+      } yield f(a, b1)
 
   }
 
@@ -142,6 +139,17 @@ object Chapter4 {
     def Try[A](a: => A): Either[Exception, A] =
       try Right(a)
       catch { case e: Exception => Left(e) }
+
+    def traverse[E,A,B](es: List[A])(f: A => Either[E, B]): Either[E, List[B]] =
+      es match {
+        case Nil => Right(Nil)
+        case f(h).map2(traverse(t)(f))(_ :: _)
+        // map2の次のtraverseの呼び方が模範はメソッド、自分が作ったのは
+      }
+
+    // 模範
+    def sequence[E,A](es: List[Either[E,A]]): Either[E,List[A]] =
+      traverse(es)(x => x)
   }
 
   def main(args: Array[String]): Unit = {
