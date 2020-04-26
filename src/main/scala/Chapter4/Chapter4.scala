@@ -140,15 +140,16 @@ object Chapter4 {
       try Right(a)
       catch { case e: Exception => Left(e) }
 
-    def traverse[E,A,B](es: List[A])(f: A => Either[E, B]): Either[E, List[B]] =
+    def traverse[E, A, B](
+      es: List[A]
+    )(f: A => Either[E, B]): Either[E, List[B]] =
       es match {
-        case Nil => Right(Nil)
-        case f(h).map2(traverse(t)(f))(_ :: _)
-        // map2の次のtraverseの呼び方が模範はメソッド、自分が作ったのは
+        case Nil    => Right(Nil)
+        case h :: t => (f(h) map2 traverse(t)(f))(_ :: _)
       }
 
     // 模範
-    def sequence[E,A](es: List[Either[E,A]]): Either[E,List[A]] =
+    def sequence[E, A](es: List[Either[E, A]]): Either[E, List[A]] =
       traverse(es)(x => x)
   }
 
