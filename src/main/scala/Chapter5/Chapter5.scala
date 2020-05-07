@@ -72,10 +72,10 @@ object Chapter5 {
 //    def takeWhile_fr(f: A => Stream[A]): Stream[A] =
 //      foldRight(Empty)((a, b) => f(a), Empty)
     def takeWhile_1(f: A => Boolean): Stream[A] =
-      foldRight(empty[A])(
+      foldRight(Stream.empty[A])(
         (h, t) =>
-          if (f(h)) cons(h, t)
-          else empty
+          if (f(h)) Stream.cons(h, t)
+          else Stream.empty
       )
   }
   case object Empty extends Stream[Nothing]
@@ -109,13 +109,17 @@ object Chapter5 {
 //      println(i, s.dropOrg(i).toList)
 //    }
 
-    // exercise 5.3
+//    // exercise 5.3
 //    val s3 = Stream(2, 4, 5, 6)
 //    println("takeWhile=" + s3.takeWhile(_ % 2 == 0).toList)
 
-    // exercise 5.4
-    val s4 = Stream(2, 4, 5, 8)
-    println("forAll=" + s4.forAll(_ % 2 == 0))
+//    // exercise 5.4
+//    val s4 = Stream(2, 4, 5, 8)
+//    println("forAll=" + s4.forAll(_ % 2 == 0))
+
+    // exercise 5.5
+    val s5 = Stream(2, 4, 5, 8)
+    println("forAll=" + s5.takeWhile_1(_ % 2 == 0).toList)
 
   }
 }
