@@ -69,6 +69,14 @@ object Chapter5 {
     def forAll(f: A => Boolean): Boolean =
       foldRight(true)((a, b) => f(a) && b)
 
+//    def takeWhile_fr(f: A => Stream[A]): Stream[A] =
+//      foldRight(Empty)((a, b) => f(a), Empty)
+    def takeWhile_1(f: A => Boolean): Stream[A] =
+      foldRight(empty[A])(
+        (h, t) =>
+          if (f(h)) cons(h, t)
+          else empty
+      )
   }
   case object Empty extends Stream[Nothing]
   case class Cons[+A](h: () => A, t: () => Stream[A]) extends Stream[A]
