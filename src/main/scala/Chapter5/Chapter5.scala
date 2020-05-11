@@ -77,6 +77,11 @@ object Chapter5 {
           if (f(h)) Stream.cons(h, t)
           else Stream.empty
       )
+
+    def headOption_1: Stream[A] =
+      foldRight(Stream.empty[A])(
+        (h, t) => Stream.cons(h(), _)
+      )
   }
   case object Empty extends Stream[Nothing]
   case class Cons[+A](h: () => A, t: () => Stream[A]) extends Stream[A]
