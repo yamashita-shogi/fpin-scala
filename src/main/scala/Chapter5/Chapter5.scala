@@ -78,10 +78,28 @@ object Chapter5 {
           else Stream.empty
       )
 
-    def headOption_1: Stream[A] =
+    // 自作
+//    def headOption_1: Stream[A] =
+//      foldRight(Stream.empty[A])((h, _) => Stream.cons(h, Stream.empty))
+
+    def headOption: Option[A] =
+      foldRight(None: Option[A])((h, _) => Some(h))
+
+    def map[B](f: A => B): Stream[B] =
+      foldRight(Stream.empty[B])((h, t) => Stream.cons(f(h), t))
+
+    def filter(f: A => Boolean): Stream[A] =
       foldRight(Stream.empty[A])(
-        (h, t) => Stream.cons(h(), _)
+        (h, t) =>
+          if (f(h)) Stream.cons(h, t)
+          else t
       )
+
+    def append[B >: A](s: => Stream[B]): Stream[B] =
+      foldRight(s)((h, t) => Stream.cons(h, t))
+
+    def flatMap[A, B](s: => Stream[B])(f: A => Stream[B]): Stream[B] =
+      foldRight(s)((h, t) => append(f(h)))
   }
   case object Empty extends Stream[Nothing]
   case class Cons[+A](h: () => A, t: () => Stream[A]) extends Stream[A]
@@ -122,9 +140,19 @@ object Chapter5 {
 //    val s4 = Stream(2, 4, 5, 8)
 //    println("forAll=" + s4.forAll(_ % 2 == 0))
 
-    // exercise 5.5
-    val s5 = Stream(2, 4, 5, 8)
-    println("forAll=" + s5.takeWhile_1(_ % 2 == 0).toList)
+//    // exercise 5.5
+//    val s5 = Stream(2, 4, 5, 8)
+//    println("forAll=" + s5.takeWhile_1(_ % 2 == 0).toList)
+
+//    // exercise 5.6
+//    val s6 = Stream(4, 5, 8)
+//    //println("forAll=" + s6.headOption_1.toList)
+//    println("headOption=" + s6.headOption)
+
+    // exercise 5.7
+    val s7 = Stream("1", "2", "3", "4")
+    //println("forAll=" + s6.headOption_1.toList)
+    println("map=" + s7.map(_.toInt).toList)
 
   }
 }
