@@ -98,8 +98,8 @@ object Chapter5 {
     def append[B >: A](s: => Stream[B]): Stream[B] =
       foldRight(s)((h, t) => Stream.cons(h, t))
 
-    def flatMap[A, B](s: => Stream[B])(f: A => Stream[B]): Stream[B] =
-      foldRight(s)((h, t) => append(f(h)))
+    def flatMap[B](f: A => Stream[B]): Stream[B] =
+      foldRight(Stream.empty[B])((h, t) => f(h) append t)
   }
   case object Empty extends Stream[Nothing]
   case class Cons[+A](h: () => A, t: () => Stream[A]) extends Stream[A]
@@ -115,6 +115,14 @@ object Chapter5 {
     def apply[A](as: A*): Stream[A] =
       if (as.isEmpty) empty
       else cons(as.head, apply(as.tail: _*))
+
+    val ones: Stream[Int] = Stream.cons(1, ones)
+
+    def constant[A](a: A): Stream[A] =
+      Stream.cons(a, constant(a))
+
+    def from(n: Int): Stream[Int] =
+      Stream.cons(n, from(n + 1))
   }
 
   def main(args: Array[String]): Unit = {
@@ -149,10 +157,14 @@ object Chapter5 {
 //    //println("forAll=" + s6.headOption_1.toList)
 //    println("headOption=" + s6.headOption)
 
-    // exercise 5.7
-    val s7 = Stream("1", "2", "3", "4")
-    //println("forAll=" + s6.headOption_1.toList)
-    println("map=" + s7.map(_.toInt).toList)
+//    // exercise 5.7
+//    val s7 = Stream("1", "2", "3", "4")
+//    //println("forAll=" + s6.headOption_1.toList)
+//    println("map=" + s7.map(_.toInt).toList)
 
+    //println(Stream.ones.map(_ + 1).exists(_ % 2 == 0))
+
+    // exersice 5.9
+    println(Stream.from(1).take(10).toList)
   }
 }
