@@ -1,6 +1,7 @@
 package Chapter5
 
 object Chapter5 {
+
   trait Stream[+A] {
     // exercise 5.1
     def toList: List[A] = this match {
@@ -8,14 +9,14 @@ object Chapter5 {
       case _          => List()
     }
 
-//    def toList: List[A] = {
-//      @annotation.tailrec
-//      def go(s: Stream[A], acc: List[A]): List[A] = s match {
-//        case Cons(h, t) => go(t(), h() :: acc)
-//        case _          => acc
-//      }
-//      go(this, List()).reverse
-//    }
+    //    def toList: List[A] = {
+    //      @annotation.tailrec
+    //      def go(s: Stream[A], acc: List[A]): List[A] = s match {
+    //        case Cons(h, t) => go(t(), h() :: acc)
+    //        case _          => acc
+    //      }
+    //      go(this, List()).reverse
+    //    }
 
     // exercise 5.2
     def take(n: Int): Stream[A] = this match {
@@ -24,11 +25,11 @@ object Chapter5 {
       case _                    => Stream.empty
     }
 
-//    @annotation.tailrec
-//    final def drop(n: Int): Stream[A] = this match {
-//      case Cons(_, t) if n > 0 => t().drop(n - 1)
-//      case _                   => this
-//    }
+    //    @annotation.tailrec
+    //    final def drop(n: Int): Stream[A] = this match {
+    //      case Cons(_, t) if n > 0 => t().drop(n - 1)
+    //      case _                   => this
+    //    }
 
     def drop(n: Int): Stream[A] =
       if (n <= 0) this
@@ -43,17 +44,17 @@ object Chapter5 {
       case _                    => Empty
     }
 
-//    def takeWhile(p: A => Boolean): Stream[A] = {
-//      this match {
-//        case Empty => Empty
-//        case Cons(h, t) =>
-//          if (p(h())) {
-//            Stream.cons(h(), t().takeWhile(p))
-//          } else {
-//            Empty
-//          }
-//      }
-//    }
+    //    def takeWhile(p: A => Boolean): Stream[A] = {
+    //      this match {
+    //        case Empty => Empty
+    //        case Cons(h, t) =>
+    //          if (p(h())) {
+    //            Stream.cons(h(), t().takeWhile(p))
+    //          } else {
+    //            Empty
+    //          }
+    //      }
+    //    }
     def foldRight[B](z: => B)(f: (A, => B) => B): B =
       this match {
         case Cons(h, t) => f(h(), t().foldRight(z)(f))
@@ -63,14 +64,14 @@ object Chapter5 {
     def exists(p: A => Boolean): Boolean =
       foldRight(false)((a, b) => p(a) || b)
 
-//    def forAll(p: A => Boolean): Boolean =
-//      foldRight(false)((a, b) => p(a) || b)
+    //    def forAll(p: A => Boolean): Boolean =
+    //      foldRight(false)((a, b) => p(a) || b)
 
     def forAll(f: A => Boolean): Boolean =
       foldRight(true)((a, b) => f(a) && b)
 
-//    def takeWhile_fr(f: A => Stream[A]): Stream[A] =
-//      foldRight(Empty)((a, b) => f(a), Empty)
+    //    def takeWhile_fr(f: A => Stream[A]): Stream[A] =
+    //      foldRight(Empty)((a, b) => f(a), Empty)
     def takeWhile_1(f: A => Boolean): Stream[A] =
       foldRight(Stream.empty[A])(
         (h, t) =>
@@ -79,8 +80,8 @@ object Chapter5 {
       )
 
     // 自作
-//    def headOption_1: Stream[A] =
-//      foldRight(Stream.empty[A])((h, _) => Stream.cons(h, Stream.empty))
+    //    def headOption_1: Stream[A] =
+    //      foldRight(Stream.empty[A])((h, _) => Stream.cons(h, Stream.empty))
 
     def headOption: Option[A] =
       foldRight(None: Option[A])((h, _) => Some(h))
@@ -100,8 +101,11 @@ object Chapter5 {
 
     def flatMap[B](f: A => Stream[B]): Stream[B] =
       foldRight(Stream.empty[B])((h, t) => f(h) append t)
+
   }
+
   case object Empty extends Stream[Nothing]
+
   case class Cons[+A](h: () => A, t: () => Stream[A]) extends Stream[A]
 
   object Stream {
@@ -110,6 +114,7 @@ object Chapter5 {
       lazy val tail = tl
       Cons(() => head, () => tail)
     }
+
     def empty[A]: Stream[A] = Empty
 
     def apply[A](as: A*): Stream[A] =
@@ -123,6 +128,62 @@ object Chapter5 {
 
     def from(n: Int): Stream[Int] =
       Stream.cons(n, from(n + 1))
+
+    val fibs = {
+      def go(f0: Int, f1: Int): Stream[Int] =
+        Stream.cons(f0, go(f1, f0 + f1))
+
+      go(0, 1)
+    }
+
+    //    def unfold1[A, S](z: S)(f: S => Option[(A, S)]): Stream[A] =
+    //      f(z) match {
+    //        case (Some[(a, _)]) => Stream.cons(a, unfold(z)(f))
+    //        case (_, s) => Stream.cons(z, s)
+    //      }
+
+    def unfold[A, S](z: S)(f: S => Option[(A, S)]): Stream[A] =
+      f(z) match {
+        case Some((h, s)) => cons(h, unfold(s)(f))
+        case None         => empty
+      }
+
+    def unfold_1[A, S](z: S)(f: S => Option[(A, S)]): Stream[A] = {
+      f(z) match {
+        case Some(t) => Stream.cons(t._1, unfold_1(t._2)(f))
+        case None    => Empty
+      }
+    }
+
+    val ones_U: Stream[Int] =
+//      Stream.unfold(1)(s => if (s != 1) None else Some(s, s))
+      Stream.unfold(1)(s => Some(s, s))
+
+    def constant_U[A](a: A): Stream[A] =
+      Stream.unfold(a)(s => Some(s, s))
+
+    def from_U(a: Int): Stream[Int] =
+      Stream.unfold(a)(s => Some(s, s + 1))
+
+//    val fibs = {
+//      def go(f0: Int, f1: Int): Stream[Int] =
+//      //Stream.cons(f0, go(f1, f0 + f1))
+//        Stream.unfold(f0)(s => Some(go(f1, f0 + f1)))
+//
+//      go(0, 1)
+//    }
+//
+//    def fibs_U(): Stream[Int] =
+//      Stream.unfold(fibs_(0))(s => Some(fibs_(s), fibs_(fibs_(s) + 1)))
+//
+//    private def fibs_(n: Int): Int = n match {
+//      case 0 => 0
+//      case 1 => 1
+//      case 2 => 1
+//      case x => fibs_(x - 1) + fibs_(x - 2)
+//    }
+    val fibsViaUnfold =
+      unfold((0, 1)) { case (f0, f1) => Some((f0, (f1, f0 + f1))) }
   }
 
   def main(args: Array[String]): Unit = {
@@ -150,7 +211,7 @@ object Chapter5 {
 
 //    // exercise 5.5
 //    val s5 = Stream(2, 4, 5, 8)
-//    println("forAll=" + s5.takeWhile_1(_ % 2 == 0).toList)
+//    println("takeWhile_1=" + s5.takeWhile_1(_ % 2 == 0).toList)
 
 //    // exercise 5.6
 //    val s6 = Stream(4, 5, 8)
@@ -164,7 +225,24 @@ object Chapter5 {
 
     //println(Stream.ones.map(_ + 1).exists(_ % 2 == 0))
 
-    // exersice 5.9
-    println(Stream.from(1).take(10).toList)
+//    // exersice 5.9
+//    println(Stream.from(1).take(10).toList)
+
+//    // exersice 5.10
+//    println(Stream.fibs.take(10).toList)
+
+//    // exersice 5.11
+//    println(
+//      Stream
+//        .unfold(10)(s => Some(s, s - 1))
+//        .take(5)
+//        .toList
+//    )
+
+    // exersice 5.12
+//    println(Stream.ones_U.take(5).toList)
+//    println(Stream.constant_U("a").take(5).toList)
+//    println(Stream.from_U(10).take(5).toList)
+    println(Stream.fibs_U().take(5).toList)
   }
 }

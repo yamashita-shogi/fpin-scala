@@ -31,11 +31,12 @@ object Chapter2 {
   }
 
   // exercise 2.1
+  // 処理図をそのまま起こした感じ
   // n番目のフィボナッチ数を取得する再帰関数を記述せよ。
   // 最初の2つのフィボナッチ数は0と1である。n番目の数字は常に前の2つの数字の合計となる。この数列は0、1、1、2、3、5のように始まる。
   // 再帰関数の定義では、ローカルな末尾再帰関数を使用すること。
   // 捜索対象の番の数。n番目
-  def fib(n: Int): Int = {
+  def fibOrg(n: Int): Int = {
 
     // ここにn番目のフィボナッチ数を探す処理
     // 最初の2つのフィボナッチ数の0と1を引数でもらう
@@ -47,6 +48,14 @@ object Chapter2 {
       else a + b
     }
     go(2, 0, 1)
+  }
+
+  def fib(n: Int): Int = {
+    @annotation.tailrec
+    def loop(n: Int, prev: Int, cur: Int): Int =
+      if (n == 0) prev
+      else loop(n - 1, cur, prev + cur)
+    loop(n, 0, 1)
   }
 
   // 配列内でStringを検索する単相関数
@@ -100,18 +109,18 @@ object Chapter2 {
 
   def main(args: Array[String]): Unit = {
     // exercise 2.1
-//    (1 to 10).foreach { i =,
-//      println("fib %d : %d".format(i, fib(i)))
-//    }
+    (1 to 10).foreach { i =>
+      println("fib %d : %d".format(i, fib(i)))
+    }
 //    println(formatAbs(-42))
 //    println(formatFactorial(7))
     //println(formatResult("absolute value", -42, abs))
     //println(formatResult("factroial", 7, factorial))
     //println(findFirst(Array("aa", "bb", "cc"), (x: String) => x == "dd")
 
-    // exercise 2.2
-    println(isSorted(Array(1, 2, 3, 4), (x: Int, y: Int) => x < y))
-    println(isSorted(Array(1, 3, 2, 4), (x: Int, y: Int) => x < y))
-    println(isSorted(Array(4, 3, 2, 1), (x: Int, y: Int) => x < y))
+//    // exercise 2.2
+//    println(isSorted(Array(1, 2, 3, 4), (x: Int, y: Int) => x < y))
+//    println(isSorted(Array(1, 3, 2, 4), (x: Int, y: Int) => x < y))
+//    println(isSorted(Array(4, 3, 2, 1), (x: Int, y: Int) => x < y))
   }
 }
