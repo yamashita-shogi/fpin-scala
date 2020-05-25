@@ -102,6 +102,25 @@ object Chapter5 {
     def flatMap[B](f: A => Stream[B]): Stream[B] =
       foldRight(Stream.empty[B])((h, t) => f(h) append t)
 
+    def map_u[A, B](f: A => B): Stream[B] = this match {
+      case Cons(h, t) => Stream.unfold(h)(_ => Some(f(h()), t))
+      case _          => Stream.empty
+    }
+
+    def mapViaUnfold[B](f: A => B): Stream[B] =
+      Stream.unfold(this) {
+        case Cons(h, t) => Some((f(h()), t()))
+        case _          => None
+      }
+
+    def takeU[A](n: Int): Stream[A] = {
+      Stream.unfold(this) {
+        case Cons(h, t) if n > 1  => Some(h(), t().takeU(n - 1))
+        case Cons(h, _) if n == 1 => Some(h(), Stream.empty)
+        case _                    => None
+      }
+    }
+
   }
 
   case object Empty extends Stream[Nothing]
@@ -150,7 +169,7 @@ object Chapter5 {
 
     def unfold_1[A, S](z: S)(f: S => Option[(A, S)]): Stream[A] = {
       f(z) match {
-        case Some(t) => Stream.cons(t._1, unfold_1(t._2)(f))
+        case Some(t) => cons(t._1, unfold_1(t._2)(f))
         case None    => Empty
       }
     }
@@ -160,10 +179,10 @@ object Chapter5 {
       Stream.unfold(1)(s => Some(s, s))
 
     def constant_U[A](a: A): Stream[A] =
-      Stream.unfold(a)(s => Some(s, s))
+      unfold(a)(s => Some(s, s))
 
     def from_U(a: Int): Stream[Int] =
-      Stream.unfold(a)(s => Some(s, s + 1))
+      unfold(a)(s => Some(s, s + 1))
 
 //    val fibs = {
 //      def go(f0: Int, f1: Int): Stream[Int] =
@@ -184,6 +203,7 @@ object Chapter5 {
 //    }
     val fibsViaUnfold =
       unfold((0, 1)) { case (f0, f1) => Some((f0, (f1, f0 + f1))) }
+
   }
 
   def main(args: Array[String]): Unit = {
@@ -243,6 +263,6 @@ object Chapter5 {
 //    println(Stream.ones_U.take(5).toList)
 //    println(Stream.constant_U("a").take(5).toList)
 //    println(Stream.from_U(10).take(5).toList)
-    println(Stream.fibs_U().take(5).toList)
+//    println(Stream.fibsViaUnfold.take(5).toList)
   }
 }
