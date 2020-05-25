@@ -102,10 +102,10 @@ object Chapter5 {
     def flatMap[B](f: A => Stream[B]): Stream[B] =
       foldRight(Stream.empty[B])((h, t) => f(h) append t)
 
-    def map_u[A, B](f: A => B): Stream[B] = this match {
-      case Cons(h, t) => Stream.unfold(h)(_ => Some(f(h()), t))
-      case _          => Stream.empty
-    }
+//    def map_u[A, B](f: A => B): Stream[B] = this match {
+//      case Cons(h, t) => Stream.unfold(h)(_ => Some(f(h()), t))
+//      case _          => Stream.empty
+//    }
 
     def mapViaUnfold[B](f: A => B): Stream[B] =
       Stream.unfold(this) {
@@ -113,13 +113,49 @@ object Chapter5 {
         case _          => None
       }
 
-    def takeU[A](n: Int): Stream[A] = {
+    def take_u(n: Int): Stream[A] = {
       Stream.unfold(this) {
-        case Cons(h, t) if n > 1  => Some(h(), t().takeU(n - 1))
+        case Cons(h, t) if n > 1  => Some(h(), t().take_u(n - 1))
         case Cons(h, _) if n == 1 => Some(h(), Stream.empty)
         case _                    => None
       }
     }
+
+    def takeViaUnfold(n: Int): Stream[A] =
+      Stream.unfold((this, n)) {
+        case (Cons(h, t), 1)          => Some((h(), (Stream.empty, 0)))
+        case (Cons(h, t), n) if n > 1 => Some((h(), (t(), n - 1)))
+        case _                        => None
+      }
+
+    def takeWhile_u(f: A => Boolean): Stream[A] = {
+      Stream.unfold(this) {
+        case Cons(h, t) => if (f(h())) Some(h(), t()) else None
+      }
+    }
+
+    def zipWith_u[B, C](s2: Stream[B])(f: (A, B) => C): Stream[C] =
+      Stream.unfold((this, s2)) {
+        case (Cons(h1, t1), Cons(h2, t2)) =>
+          Some((f(h1(), h2()), (t1(), t2())))
+        case _ => None
+      }
+
+    def zipAll[B](s2: Stream[B]): Stream[(Option[A], Option[B])] =
+      zipWithAll(s2)((_, _))
+
+    def zipWithAll[B, C](
+      s2: Stream[B]
+    )(f: (Option[A], Option[B]) => C): Stream[C] =
+      Stream.unfold((this, s2)) {
+        case (Empty, Empty) => None
+        case (Cons(h, t), Empty) =>
+          Some(f(Some(h()), Option.empty[B]) -> (t(), Stream.empty[B]))
+        case (Empty, Cons(h, t)) =>
+          Some(f(Option.empty[A], Some(h())) -> (Stream.empty[A] -> t()))
+        case (Cons(h1, t1), Cons(h2, t2)) =>
+          Some(f(Some(h1()), Some(h2())) -> (t1() -> t2()))
+      }
 
   }
 
@@ -264,5 +300,18 @@ object Chapter5 {
 //    println(Stream.constant_U("a").take(5).toList)
 //    println(Stream.from_U(10).take(5).toList)
 //    println(Stream.fibsViaUnfold.take(5).toList)
+
+    // exercise 5.13
+//    val s13_1 = Stream("1", "2", "3", "4", "5")
+//    println("mapViaUnfold=" + s13_1.mapViaUnfold(_.toInt).toList)
+
+//    val s13_2 = Stream(1, 2, 3, 4, 5)
+//    println("take_u=" + s13_2.take_u(3).toList)
+
+//    val s13_3 = Stream(2, 4, 5, 8)
+//    println("takeWhile_u=" + s13_3.takeWhile_u(_ % 2 == 0).toList)
+
+//    val s13_4 = Stream(1, 1, 1)
+//    println(s13_4.zipWith_u(Stream(2, 2, 2))(_ + _).toList)
   }
 }
