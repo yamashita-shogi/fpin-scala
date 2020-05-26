@@ -157,6 +157,39 @@ object Chapter5 {
           Some(f(Some(h1()), Some(h2())) -> (t1() -> t2()))
       }
 
+    // 5.14
+//    def startsWith[A](s: Stream[A]): Boolean = {
+//      println(this.toList, s.toList)
+//      (this, s) match {
+//        case (Cons(_, _), Empty)                      => true
+//        case (Cons(h1, t1), Cons(h2, t2)) if h1 == h2 => t1().startsWith(t2())
+//        case _                                        => false
+//      }
+//    }
+
+    def startsWith[A](s: Stream[A]): Boolean =
+      zipAll(s).takeWhile(!_._2.isEmpty) forAll {
+        case (h, h2) => h == h2
+      }
+//
+    def tails: Stream[Stream[A]] =
+      Stream.unfold(this) {
+        case Cons(h, t) => Some(Stream.cons(h(), t()), t())
+        case _          => None
+      } append Stream(Stream.empty)
+
+    // 模範
+//    def tails: Stream[Stream[A]] =
+//      Stream.unfold(this) {
+//        case Empty => None
+//        case s     => Some((s, s drop 1))
+//      } append Stream(Stream.empty)
+
+//    def scanRight[A, B, C](x: A)(f: (A, B) => C): Stream[Stream[C]] =
+//      Stream.unfold(this) {
+//        case Cons(h, t) => Some(h(), t().tails)
+//        case _          => Stream.empty[A]
+//      }
   }
 
   case object Empty extends Stream[Nothing]
@@ -313,5 +346,18 @@ object Chapter5 {
 
 //    val s13_4 = Stream(1, 1, 1)
 //    println(s13_4.zipWith_u(Stream(2, 2, 2))(_ + _).toList)
+
+//    val s13_5 = Stream(1, 1, 1)
+//    println("zipAll" + s13_5.zipAll(Stream(2, 2)).toList)
+
+//    // exercise 5.14
+//    val s14 = Stream(1, 2, 3)
+//    println(s14.startsWith(Stream(1, 2)))
+
+//    // exercise 5.15
+//    val s15 = Stream(1, 2, 3)
+//    println(s15.tails.toList.foreach(x => println(x.toList)))
+
+    println(List(1, 2, 3).scanRight(100)((n, z) => n - z))
   }
 }
