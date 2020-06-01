@@ -145,7 +145,7 @@ object Chapter5 {
       zipWithAll(s2)((_, _))
 
     def zipWithAll[B, C](
-      s2: Stream[B]
+        s2: Stream[B]
     )(f: (Option[A], Option[B]) => C): Stream[C] =
       Stream.unfold((this, s2)) {
         case (Empty, Empty) => None
@@ -357,7 +357,5 @@ object Chapter5 {
 //    // exercise 5.15
 //    val s15 = Stream(1, 2, 3)
 //    println(s15.tails.toList.foreach(x => println(x.toList)))
-
-    println(List(1, 2, 3).scanRight(100)((n, z) => n - z))
   }
 }
