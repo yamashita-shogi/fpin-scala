@@ -20,15 +20,73 @@ object Chapter6 {
     }
   }
 
+  // exercise 6.1
+  // 改良
+//  def nonNegativeInt(rng: RNG): (Int, RNG) = {
+//    val (i, r) = rng.nextInt
+//    i match {
+//      case a if a < 0 => (-(a + 1), r)
+//      case _          => (i, r)
+//    }
+//  }
+
+  // 模範
   def nonNegativeInt(rng: RNG): (Int, RNG) = {
-    rng.nextInt._1 match {
-      case a if a < 0 => (a, rng.nextInt._2)
-      case _          => (rng.nextInt._1, rng.nextInt._2)
-    }
+    val (i, r) = rng.nextInt
+    println("nonNegativeInt", i, r)
+    (if (i < 0) -(i + 1) else i, r)
   }
 
+//  def double(rng: RNG): (Double, RNG) = {
+//    val (i, r) = rng.nextInt
+//    (if (i.toDouble <= 0 && i.toDouble > 1) i.toDouble else 0, r)
+//  }
+
+  def double(rng: RNG): (Double, RNG) = {
+    val (i, r) = nonNegativeInt(rng)
+    (i / (Int.MaxValue.toDouble + 1), r)
+  }
+
+  def intDouble(rng: RNG): ((Int, Double), RNG) = {
+    val (i, r) = nonNegativeInt(rng)
+    val (d, rr) = double(r)
+    ((i, d), rr)
+  }
+
+  def doubleInt(rng: RNG): ((Double, Int), RNG) = {
+    val (d, r) = double(rng)
+    val (i, rr) = nonNegativeInt(r)
+    ((d, i), rr)
+  }
+
+  def double3(rng: RNG): ((Double, Double, Double), RNG) = {
+    val (d, r) = double(rng)
+    val (dd, rr) = double(r)
+    val (ddd, rrr) = double(rr)
+    ((d, dd, ddd), rrr)
+  }
+
+//  def ints(count: Int)(rng: RNG): (List[Int], RNG) = {
+//    (0 to count).map { _ =>
+//      val (i, r) = nonNegativeInt(rng)
+//
+//    }.toList,r
+//  }
+
   def main(args: Array[String]): Unit = {
-    val rng = RNG.SimpleRNG(1)
-    println(nonNegativeInt(rng))
+    val rng = RNG.SimpleRNG(42)
+    val rng2 = rng.nextInt._2
+    val rng3 = rng2.nextInt._2
+
+//    println(nonNegativeInt(rng3))
+//    println(nonNegativeInt1(rng3))
+
+//    println(double(rng))
+//    println(double(rng2))
+//    println(double(rng3))
+
+    println(intDouble(rng))
+    println(doubleInt(rng))
+    println(double3(rng))
   }
 }
