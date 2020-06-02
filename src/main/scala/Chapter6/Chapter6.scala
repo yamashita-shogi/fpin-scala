@@ -21,11 +21,14 @@ object Chapter6 {
   }
 
   def nonNegativeInt(rng: RNG): (Int, RNG) = {
-    if (rng.nextInt._1 < 0) (0, rng.nextInt._2)
+    rng.nextInt._1 match {
+      case a if a < 0 => (a, rng.nextInt._2)
+      case _          => (rng.nextInt._1, rng.nextInt._2)
+    }
   }
 
   def main(args: Array[String]): Unit = {
-    val rng = RNG.SimpleRNG(42)
-    println(rng.nextInt)
+    val rng = RNG.SimpleRNG(1)
+    println(nonNegativeInt(rng))
   }
 }
