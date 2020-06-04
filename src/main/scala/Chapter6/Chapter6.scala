@@ -73,20 +73,63 @@ object Chapter6 {
 //    }.toList,r
 //  }
 
+  def ints(count: Int)(rng: RNG): (List[Int], RNG) =
+    if (count <= 0)
+      (List(), rng)
+    else {
+      val (x, r1) = rng.nextInt
+      val (xs, r2) = ints(count - 1)(r1)
+      (x :: xs, r2)
+    }
+
+  def ints2(count: Int)(rng: RNG): (List[Int], RNG) = {
+    def go(count: Int, r: RNG, xs: List[Int]): (List[Int], RNG) =
+      if (count <= 0)
+        (xs, r)
+      else {
+        val (x, r2) = r.nextInt
+        go(count - 1, r2, x :: xs)
+      }
+    go(count, rng, List())
+  }
+
+  type Rand[+A] = RNG => (A, RNG)
+
+  def unit[A](a: A): Rand[A] =
+    rng => (a, rng)
+
+  def map[A, B](s: Rand[A])(f: A => B): Rand[B] =
+    rng => {
+      val (a, rng2) = s(rng)
+      (f(a), rng2)
+    }
+
+  def nonNegativeEven: Rand[Int] =
+    map(nonNegativeInt)(i => i - i % 2)
+
   def main(args: Array[String]): Unit = {
     val rng = RNG.SimpleRNG(42)
     val rng2 = rng.nextInt._2
     val rng3 = rng2.nextInt._2
 
+    // exercise 6.1
 //    println(nonNegativeInt(rng3))
 //    println(nonNegativeInt1(rng3))
 
+    // exercise 6.2
 //    println(double(rng))
 //    println(double(rng2))
 //    println(double(rng3))
 
-    println(intDouble(rng))
-    println(doubleInt(rng))
-    println(double3(rng))
+    // exercise 6.3
+//    println(intDouble(rng))
+//    println(doubleInt(rng))
+//    println(double3(rng))
+
+    // exercise 6.4
+//    println(ints(3)(rng))
+
+    println(nonNegativeEven)
+
   }
 }
