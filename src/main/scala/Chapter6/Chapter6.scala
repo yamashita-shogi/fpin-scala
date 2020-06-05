@@ -107,6 +107,10 @@ object Chapter6 {
   def nonNegativeEven: Rand[Int] =
     map(nonNegativeInt)(i => i - i % 2)
 
+  def double2: Rand[Double] = {
+    map(nonNegativeInt)(i => i / (Int.MaxValue.toDouble + 1))
+  }
+
   def main(args: Array[String]): Unit = {
     val rng = RNG.SimpleRNG(42)
     val rng2 = rng.nextInt._2
@@ -129,7 +133,8 @@ object Chapter6 {
     // exercise 6.4
 //    println(ints(3)(rng))
 
-    println(nonNegativeEven)
+//    println(nonNegativeEven)
+    println(double2)
 
   }
 }
