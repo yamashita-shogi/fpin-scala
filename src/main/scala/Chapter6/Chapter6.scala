@@ -1,6 +1,7 @@
 package Chapter6
 
 object Chapter6 {
+
   trait RNG {
     def nextInt
       : (Int, RNG) // ランダムな `Int`を生成する必要があります。 後で他の関数を `nextInt`に関して定義します。
@@ -18,29 +19,29 @@ object Chapter6 {
         (n, nextRNG) // 戻り値は、疑似ランダム整数と次の「RNG」状態の両方を含むタプルです。
       }
     }
+
   }
 
   // exercise 6.1
   // 改良
-//  def nonNegativeInt(rng: RNG): (Int, RNG) = {
-//    val (i, r) = rng.nextInt
-//    i match {
-//      case a if a < 0 => (-(a + 1), r)
-//      case _          => (i, r)
-//    }
-//  }
+  //  def nonNegativeInt(rng: RNG): (Int, RNG) = {
+  //    val (i, r) = rng.nextInt
+  //    i match {
+  //      case a if a < 0 => (-(a + 1), r)
+  //      case _          => (i, r)
+  //    }
+  //  }
 
   // 模範
   def nonNegativeInt(rng: RNG): (Int, RNG) = {
     val (i, r) = rng.nextInt
-    println("nonNegativeInt", i, r)
     (if (i < 0) -(i + 1) else i, r)
   }
 
-//  def double(rng: RNG): (Double, RNG) = {
-//    val (i, r) = rng.nextInt
-//    (if (i.toDouble <= 0 && i.toDouble > 1) i.toDouble else 0, r)
-//  }
+  //  def double(rng: RNG): (Double, RNG) = {
+  //    val (i, r) = rng.nextInt
+  //    (if (i.toDouble <= 0 && i.toDouble > 1) i.toDouble else 0, r)
+  //  }
 
   def double(rng: RNG): (Double, RNG) = {
     val (i, r) = nonNegativeInt(rng)
@@ -66,12 +67,12 @@ object Chapter6 {
     ((d, dd, ddd), rrr)
   }
 
-//  def ints(count: Int)(rng: RNG): (List[Int], RNG) = {
-//    (0 to count).map { _ =>
-//      val (i, r) = nonNegativeInt(rng)
-//
-//    }.toList,r
-//  }
+  //  def ints(count: Int)(rng: RNG): (List[Int], RNG) = {
+  //    (0 to count).map { _ =>
+  //      val (i, r) = nonNegativeInt(rng)
+  //
+  //    }.toList,r
+  //  }
 
   def ints(count: Int)(rng: RNG): (List[Int], RNG) =
     if (count <= 0)
@@ -90,10 +91,14 @@ object Chapter6 {
         val (x, r2) = r.nextInt
         go(count - 1, r2, x :: xs)
       }
+
     go(count, rng, List())
   }
 
   type Rand[+A] = RNG => (A, RNG)
+
+  // val int: Rand[Int] = rng => rng.nextInt　　の短縮形
+  val int: Rand[Int] = _.nextInt
 
   def unit[A](a: A): Rand[A] =
     rng => (a, rng)
@@ -107,9 +112,25 @@ object Chapter6 {
   def nonNegativeEven: Rand[Int] =
     map(nonNegativeInt)(i => i - i % 2)
 
-  def double2: Rand[Double] = {
+  def double2: Rand[Double] =
     map(nonNegativeInt)(i => i / (Int.MaxValue.toDouble + 1))
-  }
+
+  val _double: Rand[Double] =
+    map(nonNegativeInt)(_ / (Int.MaxValue.toDouble + 1))
+
+  def map2[A, B, C](ra: Rand[A], rb: Rand[B])(f: (A, B) => C): Rand[C] =
+    rng => {
+      val (a, rng2) = ra(rng)
+      val (b, rng3) = rb(rng2)
+      (f(a, b), rng3)
+    }
+
+  def both[A, B](ra: Rand[A], rb: Rand[B]): Rand[(A, B)] =
+    map2(ra, rb)((_, _))
+
+  val randIntDouble: Rand[(Int, Double)] = both(int, double)
+  val randIntDoubledd: Rand[(Int, Double)] = map2(int, double)((_, _))
+  val randDoubleInt: Rand[(Double, Int)] = both(double, int)
 
   def main(args: Array[String]): Unit = {
     val rng = RNG.SimpleRNG(42)
@@ -133,8 +154,15 @@ object Chapter6 {
     // exercise 6.4
 //    println(ints(3)(rng))
 
-//    println(nonNegativeEven)
-    println(double2)
+//    println(nonNegativeEven(rng2))
+
+    // exercise 6.5
+//    println(double2(rng))
+//    println(_double(rng))
+
+    // exercise 6.6
+    println(randIntDouble(rng))
+    println(randIntDoubledd(rng))
 
   }
 }
