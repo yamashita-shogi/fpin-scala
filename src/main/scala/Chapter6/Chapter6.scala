@@ -112,11 +112,17 @@ object Chapter6 {
   def nonNegativeEven: Rand[Int] =
     map(nonNegativeInt)(i => i - i % 2)
 
+  // 自分
   def double2: Rand[Double] =
     map(nonNegativeInt)(i => i / (Int.MaxValue.toDouble + 1))
 
+  // 模範
   val _double: Rand[Double] =
     map(nonNegativeInt)(_ / (Int.MaxValue.toDouble + 1))
+
+  // 杉澤さん
+  def doubleViaMap(rng: RNG): (Double, RNG) =
+    map(nonNegativeInt)(_ / Int.MaxValue.toDouble + 1)(rng)
 
   def map2[A, B, C](ra: Rand[A], rb: Rand[B])(f: (A, B) => C): Rand[C] =
     rng => {
@@ -131,6 +137,72 @@ object Chapter6 {
   val randIntDouble: Rand[(Int, Double)] = both(int, double)
   val randIntDoubledd: Rand[(Int, Double)] = map2(int, double)((_, _))
   val randDoubleInt: Rand[(Double, Int)] = both(double, int)
+//
+//  def sequence[A](fs: List[Rand[A]]): Rand[List[A]] =
+//    fs.foldRight(Nil)(i => i.)
+
+  def sequence[A](fs: List[Rand[A]]): Rand[List[A]] =
+    fs.foldRight(unit(List[A]()))((f, acc) => map2(f, acc)(_ :: _))
+
+  def _ints(count: Int): Rand[List[Int]] =
+//    sequence(List.fill(count)(nonNegativeInt))
+    sequence(List.fill(count)(_.nextInt))
+
+//  // ここから復習
+//  def nonNegativeLessThan(n: Int): Rand[Int] = { rng =>
+//    val (i, rng2) = nonNegativeInt(rng)
+//    val mod = i % n
+//    if (i + (n - 1) - mod >= 0)
+//      (mod, rng2)
+//    else nonNegativeLessThan(n)(rng)
+//  }
+
+  // 薄っらみんなの見たから取っ掛かりがあった
+  def flatMap[A, B](f: Rand[A])(g: A => Rand[B]): Rand[B] =
+    rng => {
+      val (r, rng2) = f(rng)
+      g(r)(rng2)
+    }
+
+//  def _nonNegativeLessThan(n: Int): Rand[Int] =
+//    flatMap(nonNegativeInt) { i =>
+//      val mod = i % n
+//      if (i + (n - 1) - mod >= 0)
+//        (mod, rng2)
+//      else _nonNegativeLessThan(n)(rng)
+//    }
+
+  def nonNegativeLessThan(n: Int): Rand[Int] = {
+    flatMap(nonNegativeInt) { i =>
+      val mod = i % n
+      if (i + (n - 1) - mod >= 0) unit(mod) else nonNegativeLessThan(n)
+    }
+  }
+
+  def anonNegativeLessThan(n: Int): Rand[Int] = { rng =>
+    flatMap(nonNegativeInt) { i =>
+      val mod = i % n
+      if (i + (n - 1) - mod >= 0) unit(mod) else nonNegativeLessThan(n)
+    }(rng)
+  }
+
+  def mapViaflatMap[A, B](s: Rand[A])(f: A => B): Rand[B] = {
+    flatMap(s) { rng =>
+      val (a, rng2) = s(rng)
+      (f(a), rng2)
+    }
+  }
+
+  def map2ViaflatMap[A, B, C](ra: Rand[A], rb: Rand[B])(
+      f: (A, B) => C): Rand[C] = {
+    flatMap((ra, rb)) { rng =>
+      {
+        val (a, rng2) = ra(rng)
+        val (b, rng3) = rb(rng2)
+        (f(a, b), rng3)
+      }
+    }
+  }
 
   def main(args: Array[String]): Unit = {
     val rng = RNG.SimpleRNG(42)
@@ -161,8 +233,13 @@ object Chapter6 {
 //    println(_double(rng))
 
     // exercise 6.6
-    println(randIntDouble(rng))
-    println(randIntDoubledd(rng))
+//    println(randIntDouble(rng))
+//    println(randIntDoubledd(rng))
+
+    // exercise 6.7
+    println(_ints(3)(rng))
+
+//    println(sequence(List(unit(1), unit(2), unit(3)))(r)._1)
 
   }
 }
