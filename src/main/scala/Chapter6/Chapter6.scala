@@ -179,6 +179,7 @@ object Chapter6 {
     }
   }
 
+  // 杉澤さん
   def anonNegativeLessThan(n: Int): Rand[Int] = { rng =>
     flatMap(nonNegativeInt) { i =>
       val mod = i % n
@@ -186,23 +187,30 @@ object Chapter6 {
     }(rng)
   }
 
-  def mapViaflatMap[A, B](s: Rand[A])(f: A => B): Rand[B] = {
-    flatMap(s) { rng =>
-      val (a, rng2) = s(rng)
-      (f(a), rng2)
-    }
-  }
+  // 自作
+//  def mapViaflatMap[A, B](s: Rand[A])(f: A => B): Rand[B] = {
+//    flatMap(s) { rng =>
+//      val (a, rng2) = s(rng)
+//      (f(a), rng2)
+//    }
+//  }
+//
+//  def map2ViaflatMap[A, B, C](ra: Rand[A], rb: Rand[B])(
+//      f: (A, B) => C): Rand[C] = {
+//    flatMap((ra, rb)) { rng =>
+//      {
+//        val (a, rng2) = ra(rng)
+//        val (b, rng3) = rb(rng2)
+//        (f(a, b), rng3)
+//      }
+//    }
+//  }
 
-  def map2ViaflatMap[A, B, C](ra: Rand[A], rb: Rand[B])(
-      f: (A, B) => C): Rand[C] = {
-    flatMap((ra, rb)) { rng =>
-      {
-        val (a, rng2) = ra(rng)
-        val (b, rng3) = rb(rng2)
-        (f(a, b), rng3)
-      }
-    }
-  }
+  def _map[A, B](s: Rand[A])(f: A => B): Rand[B] =
+    flatMap(s)(a => unit(f(a)))
+
+  def _map2[A, B, C](ra: Rand[A], rb: Rand[B])(f: (A, B) => C): Rand[C] =
+    flatMap(ra)(a => map(rb)(b => f(a, b)))
 
   def main(args: Array[String]): Unit = {
     val rng = RNG.SimpleRNG(42)
