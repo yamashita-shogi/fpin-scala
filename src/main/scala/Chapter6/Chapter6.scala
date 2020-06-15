@@ -212,9 +212,13 @@ object Chapter6 {
   def _map2[A, B, C](ra: Rand[A], rb: Rand[B])(f: (A, B) => C): Rand[C] =
     flatMap(ra)(a => map(rb)(b => f(a, b)))
 
-  type State[S, +A] = S => (A, S)
+  case class State[S, +A](run: S => (A, S))
 
-  type Rand[A] = State[RNG, A]
+  object State {
+//    type State[S, +A] = S => (A, S)
+    type Rand[A] = State[RNG, A]
+
+  }
 
   def main(args: Array[String]): Unit = {
     val rng = RNG.SimpleRNG(42)
