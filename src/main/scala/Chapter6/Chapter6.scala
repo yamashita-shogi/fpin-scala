@@ -212,7 +212,14 @@ object Chapter6 {
   def _map2[A, B, C](ra: Rand[A], rb: Rand[B])(f: (A, B) => C): Rand[C] =
     flatMap(ra)(a => map(rb)(b => f(a, b)))
 
-  case class State[S, +A](run: S => (A, S)) {}
+  case class State[S, +A](run: S => (A, S)) {
+    def map[S, A, B](f: A => B): State[B, S] = { rng =>
+      {
+        val (a, rng2) = s(rng)
+        (f(a), rng2)
+      }
+    }
+  }
 
   object State {
 //    type State[S, +A] = S => (A, S)
