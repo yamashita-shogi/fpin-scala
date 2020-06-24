@@ -213,10 +213,8 @@ object Chapter6 {
     flatMap(ra)(a => map(rb)(b => f(a, b)))
 
   case class State[S, +A](run: S => (A, S)) {
-    def map[S, A, B](f: A => B): State.Rand[B] = {
-      val (a, rng2) = run(this)
-      (f(a), rng2)
-    }
+    def map[B](f: A => B): State[S, B] =
+      flatMap(a => unit(f(a)))
   }
 
   object State {
