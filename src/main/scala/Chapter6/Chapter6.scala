@@ -214,7 +214,18 @@ object Chapter6 {
 
   case class State[S, +A](run: S => (A, S)) {
     def map[B](f: A => B): State[S, B] =
-      flatMap(a => unit(f(a)))
+//      flatMap(a => unit(f(a)))
+      flatMap(a => State.unit(f(a)))
+
+    def map2[B, C](sb: State[S, B])(f: (A, B) => C): State[S, C] =
+      flatMap(a => sb.map(b => f(a, b)))
+
+    def flatMap[B](f: A => State[S, B]): State[S, B] =
+      State(s => {
+        val (a, s1) = run(s)
+        f(a).run(s1)
+      })
+
   }
 
   object State {
@@ -224,6 +235,12 @@ object Chapter6 {
     def unit[S, A](a: A): State[S, A] =
       State(s => (a, s))
 
+    def sequence[A](fs: List[Rand[A]]): Rand[List[A]] =
+//      fs.foldRight(unit(List[A]()))((f, acc) => map2(f, acc)(_ :: _))
+      fs.foldRight(unit(List[A]()))(f => f.map2(f)(_ :: _))
+
+    def sequenceViaFoldRight[S, A](sas: List[State[S, A]]): State[S, List[A]] =
+      sas.foldRight(unit[S, List[A]](List()))((f, acc) => f.map2(acc)(_ :: _))
   }
 
   def main(args: Array[String]): Unit = {
