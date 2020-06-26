@@ -235,12 +235,59 @@ object Chapter6 {
     def unit[S, A](a: A): State[S, A] =
       State(s => (a, s))
 
-    def sequence[A](fs: List[Rand[A]]): Rand[List[A]] =
-//      fs.foldRight(unit(List[A]()))((f, acc) => map2(f, acc)(_ :: _))
-      fs.foldRight(unit(List[A]()))(f => f.map2(f)(_ :: _))
-
-    def sequenceViaFoldRight[S, A](sas: List[State[S, A]]): State[S, List[A]] =
+    def sequence[S, A](sas: List[State[S, A]]): State[S, List[A]] =
       sas.foldRight(unit[S, List[A]](List()))((f, acc) => f.map2(acc)(_ :: _))
+
+    def modify[S](f: S => S): State[S, Unit] =
+      for {
+        s <- get
+        _ <- set(f(s))
+      } yield ()
+
+    def get[S]: State[S, S] = State(s => (s, s))
+
+    def set[S](s: S): State[S, Unit] = State(_ => ((), s))
+
+  }
+
+  sealed trait Input
+  case object Coin extends Input
+  case object Turn extends Input
+
+  case class Machine(locked: Boolean, candies: Int, coins: Int)
+
+  object Candy {
+    type Rand[A] = State[RNG, A]
+//    import State._
+
+    def modify[S](f: S => S): State[S, Unit] =
+      for {
+        s <- get
+        _ <- set(f(s))
+      } yield ()
+
+    def get[S]: State[S, S] = State(s => (s, s))
+
+    def set[S](s: S): State[S, Unit] = State(_ => ((), s))
+
+    def update =
+      (i: Input) =>
+        (s: Machine) =>
+          (i, s) match {
+            case (_, Machine(_, 0, _))        => s
+            case (Coin, Machine(false, _, _)) => s
+            case (Turn, Machine(true, _, _))  => s
+            case (Coin, Machine(true, candy, coin)) =>
+              Machine(false, candy, coin + 1)
+            case (Turn, Machine(false, candy, coin)) =>
+              Machine(true, candy - 1, coin)
+      }
+
+    def simulateMachine(inputs: List[Input]): State[Machine, (Int, Int)] =
+      for {
+        _ <- State.sequence(inputs map (State.modify[Machine] _ compose update))
+        s <- State.get
+      } yield (s.coins, s.candies)
   }
 
   def main(args: Array[String]): Unit = {
@@ -276,9 +323,13 @@ object Chapter6 {
 //    println(randIntDoubledd(rng))
 
     // exercise 6.7
-    println(_ints(3)(rng))
+//    println(_ints(3)(rng))
 
 //    println(sequence(List(unit(1), unit(2), unit(3)))(r)._1)
 
+    println(
+      Candy
+        .simulateMachine(List(Coin, Turn, Coin, Turn, Coin, Turn, Coin, Turn))
+    )
   }
 }
