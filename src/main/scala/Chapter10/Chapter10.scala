@@ -32,6 +32,16 @@ object Chapter10 {
     val zero = None
   }
 
+  // We can get the dual of any monoid just by flipping the `op`.
+  def dual[A](m: Monoid[A]): Monoid[A] = new Monoid[A] {
+    def op(x: A, y: A): A = m.op(y, x)
+    val zero = m.zero
+  }
+
+  // Now we can have both monoids on hand:
+  def firstOptionMonoid[A]: Monoid[Option[A]] = optionMonoid[A]
+  def lastOptionMonoid[A]: Monoid[Option[A]] = dual(firstOptionMonoid)
+
   def main(args: Array[String]): Unit = {
     println()
   }
