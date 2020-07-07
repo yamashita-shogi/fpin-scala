@@ -79,6 +79,35 @@ object Chapter10 {
   def foldMapViafoldRight[A, B](as: List[A], m: Monoid[B])(f: A => B): B =
     as.foldRight(m.zero)((a, b) => m.op(f(a), b))
 
+  def foldRight[A, B](as: List[A])(z: B)(f: (A, B) => B): B =
+    foldMap(as, endoMonoid[B])(f.curried)(z)
+
+  def foldLeft[A, B](as: List[A])(z: B)(f: (B, A) => B): B =
+    foldMap(as, dual(endoMonoid[B]))(a => b => f(b, a))(z)
+
+  def foldMapV[A, B](v: IndexedSeq[A], m: Monoid[B])(f: A => B): B =
+    v.length match {
+      case 0 => m.zero
+      case 1 => f(v(0))
+      case _ =>
+        val (l, r) = v.splitAt(v.length / 2)
+        m.op(foldMapV(l, m)(f), foldMapV(r, m)(f))
+    }
+
+  def ordered(ints: IndexedSeq[Int]): Boolean = {
+    val mon = new Monoid[Option[(Int, Int, Boolean)]] {
+      def op(o1: Option[(Int, Int, Boolean)], o2: Option[(Int, Int, Boolean)]) =
+        (o1, o2) match {
+          case (Some((x1, y1, p)), Some((x2, y2, q))) =>
+            Some((x1 min x2, y1 max y2, p && q && y1 <= x2))
+          case (x, None) => x
+          case (None, x) => x
+        }
+      val zero = None
+    }
+    foldMapV(ints, mon)(i => Some((i, i, true))).map(_._3).getOrElse(true)
+  }
+
   def main(args: Array[String]): Unit = {
     println("a")
   }
