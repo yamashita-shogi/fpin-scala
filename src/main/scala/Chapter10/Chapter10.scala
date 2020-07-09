@@ -109,6 +109,10 @@ object Chapter10 {
   }
 
   def main(args: Array[String]): Unit = {
-    println("a")
+//    println("a")
+    val nums1 = IndexedSeq(5, 4, 3, 2, 1)
+    val nums2 = IndexedSeq(1, 2, 3, 4, 5)
+    println(ordered(nums1))
+//    println(ordered(nums2))
   }
 }
