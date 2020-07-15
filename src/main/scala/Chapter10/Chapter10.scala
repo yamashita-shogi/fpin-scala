@@ -108,11 +108,35 @@ object Chapter10 {
     foldMapV(ints, mon)(i => Some((i, i, true))).map(_._3).getOrElse(true)
   }
 
+  sealed trait WC
+  case class Stub(chars: String) extends WC
+  case class Part(lStub: String, words: Int, rStub: String) extends WC
+
+  val wcMonoid: Monoid[WC] = new Monoid[WC] {
+    // The empty result, where we haven't seen any characters yet.
+    val zero = Stub("")
+
+    def op(a: WC, b: WC) = (a, b) match {
+      case (Stub(c), Stub(d))       => Stub(c + d)
+      case (Stub(c), Part(l, w, r)) => Part(c + l, w, r)
+      case (Part(l, w, r), Stub(c)) => Part(l, w, r + c)
+      case (Part(l1, w1, r1), Part(l2, w2, r2)) =>
+        Part(l1, w1 + (if ((r1 + l2).isEmpty) 0 else 1) + w2, r2)
+    }
+  }
+
+  def count(str: String): WC = {
+    foldMapV(str, wcMonoid)(i => Stub(i.toString))
+  }
+
   def main(args: Array[String]): Unit = {
-//    println("a")
-    val nums1 = IndexedSeq(5, 4, 3, 2, 1)
-    val nums2 = IndexedSeq(1, 2, 3, 4, 5)
-    println(ordered(nums1))
-//    println(ordered(nums2))
+////    println("a")
+//    val nums1 = IndexedSeq(5, 4, 3, 2, 1)
+//    val nums2 = IndexedSeq(1, 2, 3, 4, 5)
+//    println(ordered(nums1))
+////    println(ordered(nums2))
+
+    val s = "lorem ipsum dolor sit amet, "
+    println(count(s))
   }
 }
