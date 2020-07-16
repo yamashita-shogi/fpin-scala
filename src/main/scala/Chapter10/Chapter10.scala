@@ -1,5 +1,7 @@
 package Chapter10
 
+import Chapter3.Chapter3.Tree
+
 object Chapter10 {
 
   trait Monoid[A] {
@@ -125,20 +127,71 @@ object Chapter10 {
     }
   }
 
-  def count(str: String): WC = {
-    foldMapV(str, wcMonoid)(
-      i => if (i.toString == " ") Part("", 0, "") else Stub(i.toString)
-    )
+  def count(s: String): Int = {
+    def wc(c: Char): WC =
+      if (c.isWhitespace)
+        Part("", 0, "")
+      else
+        Stub(c.toString)
+
+    def unstub(s: String) = s.length min 1
+
+    foldMapV(s.toIndexedSeq, wcMonoid)(wc) match {
+      case Stub(s)       => unstub(s)
+      case Part(l, w, r) => unstub(l) + w + unstub(r)
+    }
+  }
+
+  trait Foldable[F[_]] {
+    def foldRight[A, B](as: F[A])(z: B)(f: (A, B) => B): B =
+      foldMap(as)(f.curried)(endoMonoid[B])(z)
+
+    def foldLeft[A, B](as: F[A])(z: B)(f: (B, A) => B): B =
+      foldMap(as)(a => (b: B) => f(b, a))(dual(endoMonoid[B]))(z)
+
+    def foldMap[A, B](as: F[A])(f: A => B)(mb: Monoid[B]): B =
+      foldRight(as)(mb.zero)((a, b) => mb.op(f(a), b))
+
+    def concatenate[A](as: F[A])(m: Monoid[A]): A =
+      foldLeft(as)(m.zero)(m.op)
+
+    def toList[A](as: F[A]): List[A] =
+      foldRight(as)(List[A]())(_ :: _)
+  }
+
+  object ListFoldable extends Foldable[List] {
+    override def foldRight[A, B](as: List[A])(z: B)(f: (A, B) => B) =
+      as.foldRight(z)(f)
+    override def foldLeft[A, B](as: List[A])(z: B)(f: (B, A) => B) =
+      as.foldLeft(z)(f)
+    override def foldMap[A, B](as: List[A])(f: A => B)(mb: Monoid[B]): B =
+      foldLeft(as)(mb.zero)((b, a) => mb.op(b, f(a)))
+  }
+
+  object IndexedSeqFoldable extends Foldable[IndexedSeq] {
+    override def foldRight[A, B](as: IndexedSeq[A])(z: B)(f: (A, B) => B) =
+      as.foldRight(z)(f)
+    override def foldLeft[A, B](as: IndexedSeq[A])(z: B)(f: (B, A) => B) =
+      as.foldLeft(z)(f)
+    override def foldMap[A, B](as: IndexedSeq[A])(f: A => B)(mb: Monoid[B]): B =
+      foldMapV(as, mb)(f)
+  }
+
+  object StreamFoldable extends Foldable[Stream] {
+    override def foldRight[A, B](as: Stream[A])(z: B)(f: (A, B) => B) =
+      as.foldRight(z)(f)
+    override def foldLeft[A, B](as: Stream[A])(z: B)(f: (B, A) => B) =
+      as.foldLeft(z)(f)
   }
 
   def main(args: Array[String]): Unit = {
 ////    println("a")
-//    val nums1 = IndexedSeq(5, 4, 3, 2, 1)
+    val nums1 = IndexedSeq(5, 4, 3, 2, 1)
 //    val nums2 = IndexedSeq(1, 2, 3, 4, 5)
-//    println(ordered(nums1))
+    println(ordered(nums1))
 ////    println(ordered(nums2))
 
-    val s = "lorem ipsum dolor sit amet, "
-    println(count(s))
+//    val s = "lorem ipsum dolor sit amet, "
+//    println(count(s))
   }
 }
