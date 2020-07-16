@@ -126,7 +126,9 @@ object Chapter10 {
   }
 
   def count(str: String): WC = {
-    foldMapV(str, wcMonoid)(i => Stub(i.toString))
+    foldMapV(str, wcMonoid)(
+      i => if (i.toString == " ") Part("", 0, "") else Stub(i.toString)
+    )
   }
 
   def main(args: Array[String]): Unit = {
