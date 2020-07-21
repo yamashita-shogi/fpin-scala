@@ -156,8 +156,7 @@ object Chapter10 {
       foldLeft(as)(m.zero)(m.op)
 
     def toList[A](fa: F[A]): List[A] =
-      foldRight(fa)(List())(_ :: _)
-
+      foldRight(fa)(List[A]())(_ :: _)
   }
 
   object ListFoldable extends Foldable[List] {
@@ -221,16 +220,61 @@ object Chapter10 {
         case None    => z
         case Some(a) => f(a, z)
       }
+
+  }
+
+  def productMonoid[A, B](A: Monoid[A], B: Monoid[B]) = new Monoid[(A, B)] {
+//    def op(a1: A, a2: A, b1: B, b2: B) = (A.op(a1, a2), B.op(b1, b2))
+    def op(x: (A, B), y: (A, B)) =
+      (A.op(x._1, y._1), B.op(x._2, y._2))
+    val zero = (A.zero, B.zero)
+  }
+
+  def mapMergeMonoid[K, V](V: Monoid[V]): Monoid[Map[K, V]] =
+    new Monoid[Map[K, V]] {
+      def zero = Map[K, V]()
+      def op(a: Map[K, V], b: Map[K, V]) =
+        (a.keySet ++ b.keySet).foldLeft(zero) { (acc, k) =>
+          acc.updated(k, V.op(a.getOrElse(k, V.zero), b.getOrElse(k, V.zero)))
+        }
+    }
+
+  def functionMonoid[A, B](B: Monoid[B]): Monoid[A => B] =
+    new Monoid[A => B] {
+      def op(f: A => B, g: A => B) = a => B.op(f(a), g(a))
+      val zero: A => B = a => B.zero
+    }
+
+  def bag[A](as: IndexedSeq[A]): Map[A, Int] = {
+    val b: Monoid[Map[A, Int]] = mapMergeMonoid(intAddition)
+    foldMapV(as, b)(i => Map(i -> 1))
+  }
+
+  def dbag[A](as: IndexedSeq[A]): Unit = {
+    val b: Monoid[Map[A, Int]] = mapMergeMonoid(intAddition)
+    println(foldMapV(as, b)(i => { println(i); Map(i -> 1) }))
   }
 
   def main(args: Array[String]): Unit = {
 ////    println("a")
-    val nums1 = IndexedSeq(5, 4, 3, 2, 1)
+//    val nums1 = IndexedSeq(5, 4, 3, 2, 5)
 //    val nums2 = IndexedSeq(1, 2, 3, 4, 5)
-    println(ordered(nums1))
+//    println(ordered(nums1))
 ////    println(ordered(nums2))
 
 //    val s = "lorem ipsum dolor sit amet, "
 //    println(count(s))
+
+//    val M: Monoid[Map[String, Map[String, Int]]] = mapMergeMonoid(
+//      mapMergeMonoid(intAddition)
+//    )
+
+//    val m1 = Map("o1" -> Map("i1" -> 1, "i2" -> 2))
+//    val m2 = Map("o1" -> Map("i2" -> 3))
+//    val m3 = M.op(m1, m2)
+//    println(m3)
+
+    println(bag(Vector("a", "rose", "is", "a", "rose")))
+
   }
 }
