@@ -1,0 +1,64 @@
+package Chapter11
+
+import com.sun.tools.javac.jvm.Gen
+import com.sun.tools.javac.parser.Parser
+
+object Chapter11 {
+
+  trait Functor[F[_]] {
+    def map[A, B](fa: F[A])(f: A => B): F[B]
+
+    def distribute[A, B](fab: F[(A, B)]): (F[A], F[B]) =
+      (map(fab)(_._1), map(fab)(_._2))
+
+    def codistribute[A, B](e: Either[F[A], F[B]]): F[Either[A, B]] = e match {
+      case Left(fa)  => map(fa)(Left(_))
+      case Right(fb) => map(fb)(Right(_))
+    }
+  }
+
+  trait Monad[F[_]] extends Functor[F] {
+    def unit[A](a: => A): F[A]
+    def flatMap[A, B](ma: F[A])(f: A => F[B]): F[B]
+
+    def map[A, B](ma: F[A])(f: A => B): F[B] =
+      flatMap(ma)(a => unit(f(a)))
+    def map2[A, B, C](ma: F[A], mb: F[B])(f: (A, B) => C): F[C] =
+      flatMap(ma)(a => map(mb)(b => f(a, b)))
+  }
+
+  val parMonad = new Monad[Par] {
+    def unit[A](a: => A) = Par.unit(a)
+    def flatMap[A, B](ma: Par[A])(f: A => Par[B]) = Par.flatMap(ma)(f)
+  }
+
+  def parserMonad[P[+ _]](p: Parsers[P]) = new Monad[P] {
+    def unit[A](a: => A) = p.succeed(a)
+    def flatMap[A, B](ma: P[A])(f: A => P[B]) = p.flatMap(ma)(f)
+  }
+
+  val optionMonad = new Monad[Option] {
+    def unit[A](a: => A) = Some(a)
+    def flatMap[A, B](ma: Option[A])(f: A => Option[B]) = ma flatMap f
+  }
+
+  val streamMonad = new Monad[Stream] {
+    def unit[A](a: => A) = Stream(a)
+    def flatMap[A, B](ma: Stream[A])(f: A => Stream[B]) = ma flatMap f
+  }
+
+  val listMonad = new Monad[List] {
+    def unit[A](a: => A) = List(a)
+    def flatMap[A, B](ma: List[A])(f: A => List[B]) = ma flatMap f
+  }
+
+  val satreamMonad = new Monad[Stream] {
+    override def unit[A](a: => A): Stream[A] = a[A]
+    def flatMap[A, B](ma: Stream[A])(f: A => Stream[B]): Stream[B] =
+      ma flatMap f
+  }
+
+  def main(args: Array[String]): Unit = {
+    println("a")
+  }
+}
