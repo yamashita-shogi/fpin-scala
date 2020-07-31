@@ -27,7 +27,7 @@ object Chapter11 {
       flatMap(ma)(a => map(mb)(b => f(a, b)))
 
     def sequence[A](lma: List[F[A]]): F[List[A]] =
-      lma.foldRight(unit(List[A]()))((f, acc) => map2(f, acc)(_ :: _))
+      lma.foldRight(unit(List[A]()))((a, acc) => map2(a, acc)(_ :: _))
 
     def traverse[A, B](la: List[A])(f: A => F[B]): F[List[B]] =
       la.foldRight(unit(List[B]()))((a, acc) => map2(f(a), acc)(_ :: _))
