@@ -31,6 +31,9 @@ object Chapter11 {
 
     def traverse[A, B](la: List[A])(f: A => F[B]): F[List[B]] =
       la.foldRight(unit(List[B]()))((a, acc) => map2(f(a), acc)(_ :: _))
+
+    def replicateM[A](n: Int, ma: F[A]): F[List[A]] =
+      sequence(List.fill(n)(ma))
   }
 
 //  ParとParserはやってないしスルー
