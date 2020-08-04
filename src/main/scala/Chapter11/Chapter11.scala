@@ -35,10 +35,25 @@ object Chapter11 {
     def replicateM[A](n: Int, ma: F[A]): F[List[A]] =
       sequence(List.fill(n)(ma))
 
-    def filterM[A](ms: List[A])(f: A => F[Boolean]): F[List[A]] = ms match {
-      case Nil => unit(Nil)
-      case h :: t => if f(h) replicateM(1,f(h)) else filterM(t)(f)
-    }
+    def _replicateM[A](n: Int, ma: F[A]): F[List[A]] =
+      map(ma)(a => List.fill(n)(a))
+
+    def filterM[A](ms: List[A])(f: A => F[Boolean]): F[List[A]] =
+      ms match {
+        case Nil => unit(Nil)
+        case h :: t =>
+          flatMap(f(h))(
+            b =>
+              if (!b) filterM(t)(f)
+              else map(filterM(t)(f))(h :: _)
+          )
+      }
+
+    def compose[A, B, C](f: A => F[B], g: B => F[C]): A => F[C] =
+      a => flatMap(f(a))(g)
+
+    def _flatMap[A, B](ma: F[A])(f: A => F[B]): F[B] =
+      compose((_: Unit) => ma, f)(())
 
   }
 
@@ -70,5 +85,13 @@ object Chapter11 {
 
   def main(args: Array[String]): Unit = {
     println("a")
+//    println("main = ", listMonad.filterM(List(1, 2, 3, 4))(x => x))
+    println(listMonad.replicateM(3, List(2)))
+    println(listMonad._replicateM(3, List(2)))
+
+//    println(listMonad.filterM(List(1, 2, 3, 4))(x => List(x % 2 == 0)))
+//    println(
+//      optionMonad.filterM(List(Some(1), Some(2)))(x => Some(x.get % 2 == 0))
+//    )
   }
 }
