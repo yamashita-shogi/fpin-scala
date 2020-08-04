@@ -34,6 +34,12 @@ object Chapter11 {
 
     def replicateM[A](n: Int, ma: F[A]): F[List[A]] =
       sequence(List.fill(n)(ma))
+
+    def filterM[A](ms: List[A])(f: A => F[Boolean]): F[List[A]] = ms match {
+      case Nil => unit(Nil)
+      case h :: t => if f(h) replicateM(1,f(h)) else filterM(t)(f)
+    }
+
   }
 
 //  ParとParserはやってないしスルー
