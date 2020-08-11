@@ -40,9 +40,10 @@ object Chapter11 {
       ms match {
         case Nil => unit(Nil)
         case h :: t =>
-          flatMap(f(h))(b =>
-            if (!b) filterM(t)(f)
-            else map(filterM(t)(f))(h :: _)
+          flatMap(f(h))(
+            b =>
+              if (!b) filterM(t)(f)
+              else map(filterM(t)(f))(h :: _)
           )
       }
 
@@ -51,6 +52,9 @@ object Chapter11 {
 
     def _flatMap[A, B](ma: F[A])(f: A => F[B]): F[B] =
       compose((_: Unit) => ma, f)(())
+
+    def join[A](mma: F[F[A]]): F[A] =
+      flatMap(mma)((a: F[A]) => a)
   }
 
 //  ParとParserはやってないしスルー
@@ -65,17 +69,17 @@ object Chapter11 {
 //  }
 
   val optionMonad = new Monad[Option] {
-    def unit[A](a: => A) = Some(a)
+    def unit[A](a: => A)                                = Some(a)
     def flatMap[A, B](ma: Option[A])(f: A => Option[B]) = ma flatMap f
   }
 
   val streamMonad = new Monad[Stream] {
-    def unit[A](a: => A) = Stream(a)
+    def unit[A](a: => A)                                = Stream(a)
     def flatMap[A, B](ma: Stream[A])(f: A => Stream[B]) = ma flatMap f
   }
 
   val listMonad = new Monad[List] {
-    def unit[A](a: => A) = List(a)
+    def unit[A](a: => A)                            = List(a)
     def flatMap[A, B](ma: List[A])(f: A => List[B]) = ma flatMap f
   }
 
