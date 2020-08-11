@@ -1,8 +1,5 @@
 package Chapter11
 
-import com.sun.tools.javac.jvm.Gen
-import com.sun.tools.javac.parser.Parser
-
 object Chapter11 {
 
   trait Functor[F[_]] {
@@ -11,10 +8,11 @@ object Chapter11 {
     def distribute[A, B](fab: F[(A, B)]): (F[A], F[B]) =
       (map(fab)(_._1), map(fab)(_._2))
 
-    def codistribute[A, B](e: Either[F[A], F[B]]): F[Either[A, B]] = e match {
-      case Left(fa)  => map(fa)(Left(_))
-      case Right(fb) => map(fb)(Right(_))
-    }
+    def codistribute[A, B](e: Either[F[A], F[B]]): F[Either[A, B]] =
+      e match {
+        case Left(fa)  => map(fa)(Left(_))
+        case Right(fb) => map(fb)(Right(_))
+      }
   }
 
   trait Monad[F[_]] extends Functor[F] {
@@ -42,10 +40,9 @@ object Chapter11 {
       ms match {
         case Nil => unit(Nil)
         case h :: t =>
-          flatMap(f(h))(
-            b =>
-              if (!b) filterM(t)(f)
-              else map(filterM(t)(f))(h :: _)
+          flatMap(f(h))(b =>
+            if (!b) filterM(t)(f)
+            else map(filterM(t)(f))(h :: _)
           )
       }
 
@@ -85,12 +82,14 @@ object Chapter11 {
   def main(args: Array[String]): Unit = {
     println("a")
 //    println("main = ", listMonad.filterM(List(1, 2, 3, 4))(x => x))
-    println(listMonad.replicateM(3, List(2)))
-    println(listMonad._replicateM(3, List(2)))
+//    println(listMonad.replicateM(3, List(2)))
+//    println(listMonad._replicateM(3, List(2)))
 
 //    println(listMonad.filterM(List(1, 2, 3, 4))(x => List(x % 2 == 0)))
 //    println(
 //      optionMonad.filterM(List(Some(1), Some(2)))(x => Some(x.get % 2 == 0))
 //    )
+
+    println(listMonad)
   }
 }
