@@ -28,7 +28,7 @@ object Chapter11 {
       lma.foldRight(unit(List[A]()))((a, acc) => map2(a, acc)(_ :: _))
 
     def traverse[A, B](la: List[A])(f: A => F[B]): F[List[B]] =
-      la.foldRight(unit(List[B]()))((a, acc) => map2(f(a), acc)(_ :: _)) z
+      la.foldRight(unit(List[B]()))((a, acc) => map2(f(a), acc)(_ :: _))
 
     def replicateM[A](n: Int, ma: F[A]): F[List[A]] =
       sequence(List.fill(n)(ma))
@@ -55,8 +55,11 @@ object Chapter11 {
     def join[A](mma: F[F[A]]): F[A] =
       flatMap(mma)((a: F[A]) => a)
 
-    def flatMapViaJoin[A, B](ma: F[A])(f: A => B): F[B] =
-      join(map(ma)(a => unit(f(a))))
+    def flatMapViaJoin[A, B](ma: F[A])(f: A => F[B]): F[B] =
+      join(map(ma)(a => f(a)))
+
+    def _ccompose[A, B, C](f: A => F[B], g: B => F[C]): A => F[C] =
+      a => flatMapViaJoin(f(a))(g)
 
   }
 
@@ -86,7 +89,7 @@ object Chapter11 {
     def flatMap[A, B](ma: List[A])(f: A => List[B]) = ma flatMap f
   }
 
-  def main(args: Array[String]): Unit = {
+  def main(args: Array[String]): Unit =
     println("a")
 //    println("main = ", listMonad.filterM(List(1, 2, 3, 4))(x => x))
 //    println(listMonad.replicateM(3, List(2)))
@@ -97,6 +100,5 @@ object Chapter11 {
 //      optionMonad.filterM(List(Some(1), Some(2)))(x => Some(x.get % 2 == 0))
 //    )
 
-    println(listMonad)
-  }
+//    println(listMonad)
 }
