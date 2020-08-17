@@ -19,7 +19,7 @@ object Chapter11 {
     def unit[A](a: => A): F[A]
     def flatMap[A, B](ma: F[A])(f: A => F[B]): F[B]
 
-    def map[A, B](ma: F[A])(f: A => B): F[B] =
+    def map[A, B](ma: F[A])(f: A => B): F[B]                    =
       flatMap(ma)(a => unit(f(a)))
     def map2[A, B, C](ma: F[A], mb: F[B])(f: (A, B) => C): F[C] =
       flatMap(ma)(a => map(mb)(b => f(a, b)))
@@ -28,7 +28,7 @@ object Chapter11 {
       lma.foldRight(unit(List[A]()))((a, acc) => map2(a, acc)(_ :: _))
 
     def traverse[A, B](la: List[A])(f: A => F[B]): F[List[B]] =
-      la.foldRight(unit(List[B]()))((a, acc) => map2(f(a), acc)(_ :: _))
+      la.foldRight(unit(List[B]()))((a, acc) => map2(f(a), acc)(_ :: _)) z
 
     def replicateM[A](n: Int, ma: F[A]): F[List[A]] =
       sequence(List.fill(n)(ma))
@@ -38,12 +38,11 @@ object Chapter11 {
 
     def filterM[A](ms: List[A])(f: A => F[Boolean]): F[List[A]] =
       ms match {
-        case Nil => unit(Nil)
+        case Nil    => unit(Nil)
         case h :: t =>
-          flatMap(f(h))(
-            b =>
-              if (!b) filterM(t)(f)
-              else map(filterM(t)(f))(h :: _)
+          flatMap(f(h))(b =>
+            if (!b) filterM(t)(f)
+            else map(filterM(t)(f))(h :: _)
           )
       }
 
@@ -55,6 +54,10 @@ object Chapter11 {
 
     def join[A](mma: F[F[A]]): F[A] =
       flatMap(mma)((a: F[A]) => a)
+
+    def flatMapViaJoin[A, B](ma: F[A])(f: A => B): F[B] =
+      join(map(ma)(a => unit(f(a))))
+
   }
 
 //  ParとParserはやってないしスルー
@@ -68,17 +71,17 @@ object Chapter11 {
 //    def flatMap[A, B](ma: P[A])(f: A => P[B]) = p.flatMap(ma)(f)
 //  }
 
-  val optionMonad = new Monad[Option] {
+  val optionMonad                     = new Monad[Option] {
     def unit[A](a: => A)                                = Some(a)
     def flatMap[A, B](ma: Option[A])(f: A => Option[B]) = ma flatMap f
   }
 
-  val streamMonad = new Monad[Stream] {
+  val streamMonad                     = new Monad[Stream] {
     def unit[A](a: => A)                                = Stream(a)
     def flatMap[A, B](ma: Stream[A])(f: A => Stream[B]) = ma flatMap f
   }
 
-  val listMonad = new Monad[List] {
+  val listMonad                       = new Monad[List] {
     def unit[A](a: => A)                            = List(a)
     def flatMap[A, B](ma: List[A])(f: A => List[B]) = ma flatMap f
   }
