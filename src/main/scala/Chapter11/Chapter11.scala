@@ -135,10 +135,14 @@ object Chapter11 {
   def setState[S](s: S): State[S, Unit] = State(_ => ((), s))
 
   val F = stateMonad[Int]
+  def a[A]: State[Int, List[(Int, A)]] = F.unit(List[(Int, A)]())
   def zipWithIndex[A](as: List[A]): List[(Int, A)] =
     as.foldLeft(F.unit(List[(Int, A)]()))((acc, a) =>
         for {
+
           xs <- acc
+          _ = println(s"acc: $acc")
+          _ = println(s"xs: $xs")
           n <- getState
           _ <- setState(n + 1)
         } yield (n, a) :: xs
@@ -146,6 +150,15 @@ object Chapter11 {
       .run(0)
       ._1
       .reverse
+
+  def _zipWithIndex[A](as: List[A]): State[Int, List[(Int, A)]] =
+    as.foldLeft(F.unit(List[(Int, A)]()))((acc, a) =>
+      for {
+        xs <- acc
+        n <- getState
+        _ <- setState(n + 1)
+      } yield (n, a) :: xs
+    )
 
   case class Reader[R, A](run: R => A)
   object Reader {
@@ -195,6 +208,7 @@ object Chapter11 {
 //    println(map2.run(5))
 //    println(sequence.run(5))
 
-    println(zipWithIndex(List(1, 2, 3)))
+    println(zipWithIndex(List(10, 20, 30)))
+//    println(_zipWithIndex(List(10, 20, 30)))
   }
 }
