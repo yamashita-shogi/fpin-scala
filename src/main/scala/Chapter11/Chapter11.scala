@@ -139,12 +139,12 @@ object Chapter11 {
   def zipWithIndex[A](as: List[A]): List[(Int, A)] =
     as.foldLeft(F.unit(List[(Int, A)]()))((acc, a) =>
         for {
-
           xs <- acc
           _ = println(s"acc: $acc")
           _ = println(s"xs: $xs")
           n <- getState
           _ <- setState(n + 1)
+          _ = Console.println(n)
         } yield (n, a) :: xs
       )
       .run(0)
