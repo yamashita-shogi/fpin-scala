@@ -1,5 +1,7 @@
 package Chapter11
 
+import scala.::
+
 object Chapter11 {
 
   trait Functor[F[_]] {
@@ -125,7 +127,8 @@ object Chapter11 {
 
   def stateMonad[S] =
     new Monad[({ type f[x] = State[S, x] })#f] {
-      def unit[A](a: => A): State[S, A] = State(s => (a, s))
+      def unit[A](a: => A): State[S, A] =
+        State(s => (a, s))
 
       def flatMap[A, B](st: State[S, A])(f: A => State[S, B]): State[S, B] =
         st flatMap f
@@ -144,7 +147,7 @@ object Chapter11 {
           _ = println(s"xs: $xs")
           n <- getState
           _ <- setState(n + 1)
-          _ = Console.println(n)
+          _ = println(s"n: $n")
         } yield (n, a) :: xs
       )
       .run(0)
@@ -207,6 +210,9 @@ object Chapter11 {
 //    println(replicateM.run(5))
 //    println(map2.run(5))
 //    println(sequence.run(5))
+
+    val aa = a.run(0)
+    println(aa._1.map(_ => getState))
 
     println(zipWithIndex(List(10, 20, 30)))
 //    println(_zipWithIndex(List(10, 20, 30)))
