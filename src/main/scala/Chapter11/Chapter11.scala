@@ -151,14 +151,16 @@ object Chapter11 {
       ._1
       .reverse
 
-  def _zipWithIndex[A](as: List[A]): State[Int, List[(Int, A)]] =
+  def _zipWithIndex[A](as: List[A]): (List[(Int, A)], Int) =
     as.foldLeft(F.unit(List[(Int, A)]()))((acc, a) =>
-      for {
-        xs <- acc
-        n <- getState
-        _ <- setState(n + 1)
-      } yield (n, a) :: xs
-    )
+        for {
+          xs <- acc
+          n <- getState
+//        _ <- setState(n + 1)
+//        } yield (n, a) :: xs
+        } yield (n, a) :: xs
+      )
+      .run(0)
 
   case class Reader[R, A](run: R => A)
   object Reader {
@@ -208,7 +210,7 @@ object Chapter11 {
 //    println(map2.run(5))
 //    println(sequence.run(5))
 
-    println(zipWithIndex(List(10, 20, 30)))
-//    println(_zipWithIndex(List(10, 20, 30)))
+//    println(zipWithIndex(List(10, 20, 30)))
+    println(_zipWithIndex(List(10, 20, 30)))
   }
 }
