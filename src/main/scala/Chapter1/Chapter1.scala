@@ -1,7 +1,6 @@
 package Chapter1
 
-object Chapter1 extends App {
-
+object Chapter1 {
 
   //  class Cafe {
   //    def buyCoffee(cc: CreditCard): (Coffee, Charge) = {
@@ -30,6 +29,6 @@ object Chapter1 extends App {
   //  def f[A,B] (a: A): B = ???
   //
 
-
-  println("chapter1")
+  def main(args: Array[String]): Unit =
+    println("chapter1")
 }

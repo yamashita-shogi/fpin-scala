@@ -42,9 +42,10 @@ object Chapter11 {
       ms match {
         case Nil => unit(Nil)
         case h :: t =>
-          flatMap(f(h))(b =>
-            if (!b) filterM(t)(f)
-            else map(filterM(t)(f))(h :: _)
+          flatMap(f(h))(
+            b =>
+              if (!b) filterM(t)(f)
+              else map(filterM(t)(f))(h :: _)
           )
       }
 
@@ -140,32 +141,44 @@ object Chapter11 {
   val F = stateMonad[Int]
   def a[A]: State[Int, List[(Int, A)]] = F.unit(List[(Int, A)]())
   def zipWithIndex[A](as: List[A]): List[(Int, A)] =
-    as.foldLeft(F.unit(List[(Int, A)]()))((acc, a) =>
-        for {
-          xs <- acc
-          _ = println(s"acc: $acc")
-          _ = println(s"xs: $xs")
-          n <- getState
-          _ <- setState(n + 1)
-          _ = println(s"n: $n")
-        } yield (n, a) :: xs
+    as.foldLeft(F.unit(List[(Int, A)]()))(
+        (acc, a) =>
+          for {
+            xs <- acc
+            _ = println(s"acc: $acc")
+            _ = println(s"xs: $xs")
+            n <- getState
+            _ <- setState(n + 1)
+            _ = println(s"n: $n")
+          } yield (n, a) :: xs
       )
       .run(0)
       ._1
       .reverse
 
-  def _zipWithIndex[A](as: List[A]): List[(Int, A)] =
-    as.foldLeft(F.unit(List[(Int, A)]()))((acc, a) =>
-      acc
-        .flatMap(xs => {
-          getState.flatMap(n =>
-            {
-              setState(n + 1).flatMap(_ => _)
-            }.map((n, a) :: xs).run(0)._1.reverse
-          )
+//  def _zipWithIndex[A](as: List[A]): List[(Int, A)] =
+//    as.foldLeft(F.unit(List[(Int, A)]()))(
+//      (acc, a) =>
+//        acc
+//          .flatMap(xs => {
+//            getState.flatMap(n => {
+//              setState(n + 1).flatMap(_ => _)
+//            }.map((n, a) :: xs).run(0)._1.reverse)
+//          }))
+////      .run(0)
+
+  def zipWithIndex2[A](as: List[A]): List[(Int, A)] =
+    as.foldLeft(F.unit(List[(Int, A)]()))(
+        (acc: State[Int, List[(Int, A)]], a: A) => {
+          acc.flatMap((xs: Seq[(Int, A)]) => {
+            getState.flatMap((n: Int) => {
+              setState(n + 1).map((_: Unit) => List((n, a)) ++ xs)
+            })
+          })
         })
-    )
-//      .run(0)
+      .run(0)
+      ._1
+      .reverse
 
   case class Reader[R, A](run: R => A)
   object Reader {
@@ -182,7 +195,7 @@ object Chapter11 {
       }
   }
 
-  def main(args: Array[String]): Unit = {
+  def main(args: Array[String]): Unit =
 //    println("a")
 
 //    println("main = ", listMonad.filterM(List(1, 2, 3, 4))(x => x))
@@ -217,28 +230,28 @@ object Chapter11 {
 
     //    println(zipWithIndex(List(10, 20, 30)))
 //    println(_zipWithIndex(List(10, 20, 30)))
+    println(zipWithIndex2(List(10, 20, 30)))
 
-    // exercise 11.20
-    val f1 = (i: Int) => s"${i * 10} * 10"
-    val f2 = (i: Int) => s"${i * 20} * 20"
-    val readerMonad: Monad[
-      ({
-        type f[x] = Reader[Int, x]
-      })#f
-    ] = Reader.readerMonad
-    // flatMapは関数を実行した結果から再度 Readerを定義する
-    val fMapReader = Reader(f1)
-    val flatMapResult =
-      readerMonad.flatMap(fMapReader)(s => Reader(r => s"$s * ${r.toString}"))
-    println(s"result flatMap: ${flatMapResult.run(2)}")
-    val sequenceReader = List(Reader(f1), Reader(f2))
-    val sequenceResult = readerMonad.sequence(sequenceReader)
-    println(s"result sequence: ${sequenceResult.run(2)}")
-    val f3 = (i: Int) => Reader[Int, String](ii => s"${i + ii} *")
-    val joinReader: Reader[Int, Reader[Int, String]] = Reader(f3)
-    val joinResult = readerMonad.join(joinReader)
-    println(s"result join: ${joinResult.run(2)}")
-    val replicateMResult = readerMonad.replicateM(5, Reader(f1))
-    println(s"result replicateM: ${replicateMResult.run(2)}")
-  }
+//    // exercise 11.20
+//    val f1 = (i: Int) => s"${i * 10} * 10"
+//    val f2 = (i: Int) => s"${i * 20} * 20"
+//    val readerMonad: Monad[
+//      ({
+//        type f[x] = Reader[Int, x]
+//      })#f
+//    ] = Reader.readerMonad
+//    // flatMapは関数を実行した結果から再度 Readerを定義する
+//    val fMapReader = Reader(f1)
+//    val flatMapResult =
+//      readerMonad.flatMap(fMapReader)(s => Reader(r => s"$s * ${r.toString}"))
+//    println(s"result flatMap: ${flatMapResult.run(2)}")
+//    val sequenceReader = List(Reader(f1), Reader(f2))
+//    val sequenceResult = readerMonad.sequence(sequenceReader)
+//    println(s"result sequence: ${sequenceResult.run(2)}")
+//    val f3 = (i: Int) => Reader[Int, String](ii => s"${i + ii} *")
+//    val joinReader: Reader[Int, Reader[Int, String]] = Reader(f3)
+//    val joinResult = readerMonad.join(joinReader)
+//    println(s"result join: ${joinResult.run(2)}")
+//    val replicateMResult = readerMonad.replicateM(5, Reader(f1))
+//    println(s"result replicateM: ${replicateMResult.run(2)}")
 }
