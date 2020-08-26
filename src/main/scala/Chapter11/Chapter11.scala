@@ -156,16 +156,16 @@ object Chapter11 {
 
   def _zipWithIndex[A](as: List[A]): List[(Int, A)] =
     as.foldLeft(F.unit(List[(Int, A)]()))((acc, a) =>
-        acc
-          .flatMap(xs => {
-            getState.flatMap(n =>
-              {
-                setState(n + 1)
-              }.map((n, a) :: xs)
-            )
-          })
-      )
-      .run(0)
+      acc
+        .flatMap(xs => {
+          getState.flatMap(n =>
+            {
+              setState(n + 1).flatMap(_ => _)
+            }.map((n, a) :: xs).run(0)._1.reverse
+          )
+        })
+    )
+//      .run(0)
 
   case class Reader[R, A](run: R => A)
   object Reader {
