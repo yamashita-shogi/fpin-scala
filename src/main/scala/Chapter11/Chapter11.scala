@@ -145,11 +145,11 @@ object Chapter11 {
         (acc, a) =>
           for {
             xs <- acc
-            _ = println(s"acc: $acc")
-            _ = println(s"xs: $xs")
+//            _ = println(s"acc: $acc")
+//            _ = println(s"xs: $xs")
             n <- getState
             _ <- setState(n + 1)
-            _ = println(s"n: $n")
+//            _ = println(s"n: $n")
           } yield (n, a) :: xs
       )
       .run(0)
@@ -158,14 +158,14 @@ object Chapter11 {
 
 //  def _zipWithIndex[A](as: List[A]): List[(Int, A)] =
 //    as.foldLeft(F.unit(List[(Int, A)]()))(
-//      (acc, a) =>
-//        acc
-//          .flatMap(xs => {
+//        (acc, a) =>
+//          acc.flatMap(xs => {
 //            getState.flatMap(n => {
-//              setState(n + 1).flatMap(_ => _)
-//            }.map((n, a) :: xs).run(0)._1.reverse)
-//          }))
-////      .run(0)
+//              setState(n + 1).map((n, a) :: xs)
+//            })
+//          })
+//      )
+//      .run(0)
 
   def zipWithIndex2[A](as: List[A]): List[(Int, A)] =
     as.foldLeft(F.unit(List[(Int, A)]()))(
