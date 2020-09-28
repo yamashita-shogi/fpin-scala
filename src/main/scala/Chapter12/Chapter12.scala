@@ -6,6 +6,7 @@ object Chapter12 {
   trait Applicative[F[_]] extends Functor[F] {
     // プリミティブコンビネータ
     def map2[A, B, C](fa: F[A], fb: F[B])(f: (A, B) => C): F[C]
+
     def unit[A](a: => A): F[A]
 
     // 派⽣コンビネータ
@@ -16,7 +17,7 @@ object Chapter12 {
       as.foldRight(unit(List[B]()))((a, fbs) => map2(f(a), fbs)(_ :: _))
 
     def sequence[A](fas: List[F[A]]): F[List[A]] =
-      fas.foldRight(unit(List[A]()))((a, acc) => map2(a, acc)(_ :: _))
+      fas.foldRight(unit(List[A]()))((a, acc) => map2(a, acc)((_: A) :: _))
 
     def replicateM[A](n: Int, ma: F[A]): F[List[A]] =
       sequence(List.fill(n)(ma))
@@ -24,6 +25,27 @@ object Chapter12 {
     // def product[A, B](fa: F[A], fb: F[A]): F[(A, B)]
     def product[A, B](fa: F[A], fb: F[B]): F[(A, B)] =
       map2(fa, fb)((_, _))
+
+////     exercise 12.8用
+//    def apply[A, B](fab: F[A => B])(fa: F[A]): F[B] =
+//      map2(fab, fa)(_(_))
+//    def map2[A, B, C](fa: F[A], fb: F[B])(f: (A, B) => C): F[C] =
+//      apply(map(fa)(f.curried))(fb)
+//    // exercise 12.8
+//    def product[G[_]](
+//        G: Applicative[G]): Applicative[({ type f[x] = (F[x], G[x]) })#f] = {
+//      val self = this
+//      new Applicative[({ type f[x] = (F[x], G[x]) })#f] {
+//        def unit[A](a: => A) = (self.unit(a), G.unit(a))
+//        override def apply[A, B](fs: (F[A => B], G[A => B]))(p: (F[A], G[A])) =
+//          (self.apply(fs._1)(p._1), G.apply(fs._2)(p._2))
+//      }
+//    }
+    def sequenceMap[K, V](ofa: Map[K, F[V]]): F[Map[K, V]] =
+      (ofa foldLeft unit(Map.empty[K, V])) {
+        case (acc, (k, fv)) =>
+          map2(acc, fv)((m, v) => m + (k -> v))
+      }
   }
 
   // exercise 12.2
@@ -94,6 +116,7 @@ object Chapter12 {
   def validationApplicative[E] =
     new Applicative[({ type f[x] = Validation[E, x] })#f] {
       def unit[A](a: => A) = Success(a)
+
       override def map2[A, B, C](fa: Validation[E, A], fb: Validation[E, B])(
           f: (A, B) => C) =
         (fa, fb) match {
@@ -132,5 +155,4 @@ object Chapter12 {
 //    println(_streamApplicative.sequence(List(Stream(1, 2, 3, 4))))
 
   }
-
 }
