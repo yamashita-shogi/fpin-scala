@@ -137,6 +137,8 @@ object Chapter11 {
 
   def getState[S]: State[S, S] = State(s => (s, s))
   def setState[S](s: S): State[S, Unit] = State(_ => ((), s))
+  def get[S]: State[S, S] = State(s => (s, s))
+  def set[S](s: S): State[S, Unit] = State(_ => ((), s))
 
   val F = stateMonad[Int]
   def a[A]: State[Int, List[(Int, A)]] = F.unit(List[(Int, A)]())

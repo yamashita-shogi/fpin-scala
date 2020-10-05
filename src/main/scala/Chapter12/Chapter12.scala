@@ -1,6 +1,8 @@
 package Chapter12
 
-import Chapter11.Chapter11.{Functor, Monad}
+import Chapter10.Chapter10.{Foldable, Monoid, dual, endoMonoid}
+import Chapter11.Chapter11.Id.idMonad
+import Chapter11.Chapter11.{Functor, IntStateMonad, Monad, State, get, set}
 
 object Chapter12 {
   trait Applicative[F[_]] extends Functor[F] {
@@ -101,7 +103,8 @@ object Chapter12 {
   def eitherMonad[E] = new Monad[({ type f[x] = Either[E, x] })#f] {
     def unit[A](a: => A) = Right(a)
 
-    def flatMap[A, B](e: Either[E, A])(f: A => Either[E, B]): Either[E, B] =
+    override def flatMap[A, B](e: Either[E, A])(
+        f: A => Either[E, B]): Either[E, B] =
       e match {
         case Left(a)  => Left(a)
         case Right(a) => f(a)
@@ -128,31 +131,155 @@ object Chapter12 {
         }
     }
 
-//  // Monad[F]をApplicative[F]の部分型（subtype）にすることが可能です
-//  trait Monad[F[_]] extends Applicative[F] {
-//    def flatMap[A, B](fa: F[A])(f: A => F[B]): F[B] =
-//      join(map(fa)(f))
+  // Monad[F]をApplicative[F]の部分型（subtype）にすることが可能です
+  trait Monad[F[_]] extends Applicative[F] {
+    def flatMap[A, B](fa: F[A])(f: A => F[B]): F[B] =
+      join(map(fa)(f))
+
+    def join[A](ffa: F[F[A]]): F[A] = flatMap(ffa)(fa => fa)
+
+    def compose[A, B, C](f: A => F[B], g: B => F[C]): A => F[C] =
+      a => flatMap(f(a))(g)
+
+    override def map[A, B](fa: F[A])(f: A => B): F[B] =
+      flatMap(fa)(a => unit(f(a)))
+
+    def map2[A, B, C](fa: F[A], fb: F[B])(f: (A, B) => C): F[C] =
+      flatMap(fa)(a => map(fb)(b => f(a, b)))
+  }
+
+  object Monad {
+    def stateMonad[S] = new Monad[({ type f[x] = State[S, x] })#f] {
+      def unit[A](a: => A): State[S, A] = State(s => (a, s))
+      override def flatMap[A, B](st: State[S, A])(
+          f: A => State[S, B]): State[S, B] =
+        st flatMap f
+    }
+  }
+
+//  // exercise 12.13
+//  trait Traverse[F[_]] {
+//    def traverse[G[_]: Applicative, A, B](fa: F[A])(f: A => G[B]): G[F[B]] = ???
+//    // mapがないため
+////      sequence(map(fa)(f))
 //
-//    def join[A](ffa: F[F[A]]): F[A] = flatMap(ffa)(fa => fa)
+//    def sequence[G[_]: Applicative, A](fga: F[G[A]]): G[F[A]] =
+//      traverse(fga)(ga => ga)
+//  }
 //
-//    def compose[A, B, C](f: A => F[B], g: B => F[C]): A => F[C] =
-//      a => flatMap(f(a))(g)
+//  case class Tree[+A](head: A, tail: List[Tree[A]])
 //
+//  val listTraverse = new Traverse[List] {
+//    override def traverse[M[_], A, B](as: List[A])(f: A => M[B])(
+//        implicit M: Applicative[M]): M[List[B]] =
+//      as.foldRight(M.unit(List[B]()))((a, fbs) => M.map2(f(a), fbs)(_ :: _))
+//  }
+//
+//  val optionTraverse = new Traverse[Option] {
+//    override def traverse[G[_], A, B](oa: Option[A])(f: A => G[B])(
+//        G: Applicative[G]): G[Option[B]] =
+//      oa match {
+//        case Some(a) => G.map(f(a))(Some(_))
+//        case None    => G.unit(None)
+//      }
+//  }
+//
+//  val treeTraverse = new Traverse[Tree] {
+//    override def traverse[G[_], A, B](ta: Tree[A])(f: A => G[B])(
+//        implicit G: Applicative[G]): G[Tree[B]] =
+//      G.map2(f(ta.head), listTraverse.traverse(ta.tail)(a => traverse(a)(f)))(
+//        Tree(_, _))
+//  }
+
+  // exercise 12.14
+  trait Traverse[F[_]] extends Functor[F] {
+    def traverse[G[_], A, B](
+        fa: F[A]
+    )(f: A => G[B])(implicit G: Applicative[G]): G[F[B]] =
+      sequence(map(fa)(f))
+    def sequence[G[_], A](fga: F[G[A]])(implicit G: Applicative[G]): G[F[A]] =
+      traverse(fga)(ga => ga)
+
+    type Id[A] = A
+    val idMonad = new Monad[Id] {
+      def unit[A](a: => A) = a
+      override def flatMap[A, B](a: A)(f: A => B): B = f(a)
+    }
+
+    def map[A, B](fa: F[A])(f: A => B): F[B] =
+      traverse[Id, A, B](fa)(f)(idMonad)
+
+    def traverseS[S, A, B](fa: F[A])(f: A => State[S, B]): State[S, F[B]] =
+      traverse[({ type f[x] = State[S, x] })#f, A, B](fa)(f)(Monad.stateMonad)
+
+    def zipWithIndex[A](ta: F[A]): F[(A, Int)] =
+      traverseS(ta)((a: A) =>
+        (for {
+          i <- get[Int]
+          _ <- set(i + 1)
+        } yield (a, i))).run(0)._1
+
+    def _toList[A](fa: F[A]): List[A] =
+      traverseS(fa)((a: A) =>
+        (for {
+          as <- get[List[A]]
+          _ <- set(a :: as)
+        } yield ())).run(Nil)._2.reverse
+
+    def mapAccum[S, A, B](fa: F[A], s: S)(f: (A, S) => (B, S)): (F[B], S) =
+      traverseS(fa)((a: A) =>
+        (for {
+          s1 <- get[S]
+          (b, s2) = f(a, s1)
+          _ <- set(s2)
+        } yield b)).run(s)
+
+//    def toList[A](fa: F[A]): List[A] =
+//      mapAccum(fa, List[A]())((a, s) => ((), a :: s))._2.reverse
+//
+//    def zipWithIndex[A](fa: F[A]): F[(A, Int)] =
+//      mapAccum(fa, 0)((a, s) => ((a, s), s + 1))._1
+  }
+
+  //  // exercise 12.14
+//  trait _Traverse[F[_]] extends Foldable[F] with Functor[F] {
+//    def traverse[G[_], A, B](
+//        fa: F[A]
+//    )(f: A => G[B])(implicit G: Applicative[G]): G[F[B]] =
+//      sequence(map(fa)(f))
+//
+//    def sequence[G[_], A](fga: F[G[A]])(implicit G: Applicative[G]): G[F[A]] =
+//      traverse(fga)(ga => ga)
+//
+//    // traverse をベースにして map を実装
+//    // Identityの意味で、恒等性(f(x)=x)を表す
+//    // 最も単純なApplicativeということで利用
+//    type Id[A] = A
+//    // Idモナドを作成(unit,flatMapを持つ Aのモナド化)
+//    val idMonad = new Monad[Id] {
+//      def unit[A](a: => A) = a
+//
+//      override def flatMap[A, B](a: A)(f: A => B): B = f(a)
+//    }
+//
+//    //`traverse`を呼び出し、` Id`を `Applicative`として選択する
+//    // Bがapplicativeのときにも対応できるよということ？
+//    // implicitでApplicativeつけない場合と何が違うの？
+//    // traverseを利用することでmapの一般化ができるということ
+//    // (抽象化した共通項を見出し、他の方でも利用できるよう置換)
+//    // traverse は map を作れるのでmapより汎用的
 //    def map[A, B](fa: F[A])(f: A => B): F[B] =
-//      flatMap(fa)(a => unit(f(a)))
-//
-//    def map2[A, B, C](fa: F[A], fb: F[B])(f: (A, B) => C): F[C] =
-//      flatMap(fa)(a => map(fb)(b => f(a, b)))
+//      traverse[Id, A, B](fa)(f)(idMonad)
 //  }
 
   def main(args: Array[String]): Unit = {
 
-    // Streamのリストから、Streamをリストにまとめたものにする
-    println(
-      streamApplicative
-        .sequence(List(Stream(1, 2), Stream(3, 4)))
-        .foreach(println))
-//    println(_streamApplicative.sequence(List(Stream(1, 2, 3, 4))))
+//    // Streamのリストから、Streamをリストにまとめたものにする
+//    println(
+//      streamApplicative
+//        .sequence(List(Stream(1, 2), Stream(3, 4)))
+//        .foreach(println))
+////    println(_streamApplicative.sequence(List(Stream(1, 2, 3, 4))))
 
   }
 }
