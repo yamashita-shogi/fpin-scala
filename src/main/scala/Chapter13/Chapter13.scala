@@ -75,11 +75,71 @@ object Chapter13 {
       } yield ()
   }
 
+  object IO2a {
+    sealed trait IO[A] {
+      def flatMap[B](f: A => IO[B]): IO[B] =
+        FlatMap(this, f)
+      def map[B](f: A => B): IO[B] =
+        flatMap(f andThen (Return(_)))
+    }
+    case class Return[A](a: A) extends IO[A]
+    case class Suspend[A](resume: () => A) extends IO[A]
+    case class FlatMap[A, B](sub: IO[A], k: A => IO[B]) extends IO[B]
+
+    def printLine(s: String): IO[Unit] =
+      Suspend(() => println(s))
+
+////    forever
+////    val p = IO.forever(printLine("Still going..."))
+//    @annotation.tailrec
+//    def run[A](io: IO[A]): A = io match {
+//      case Return(a)  => a
+//      case Suspend(r) => r()
+//      case FlatMap(x, f) =>
+//        x match {
+//          case Return(a)     => run(f(a))
+//          case Suspend(r)    => run(f(r()))
+//          case FlatMap(y, g) => run(y flatMap (a => g(a) flatMap f))
+//        }
+//    }
+  }
+
+  object IO3 {
+
+    /*
+    We can generalize `TailRec` and `Async` to the type `Free`, which is
+    a `Monad` for any choice of `F`.
+     */
+
+    sealed trait Free[F[_], A] {
+      def flatMap[B](f: A => Free[F, B]): Free[F, B] =
+        FlatMap(this, f)
+
+      def map[B](f: A => B): Free[F, B] =
+        flatMap(f andThen (Return(_)))
+    }
+
+    case class Return[F[_], A](a: A) extends Free[F, A]
+
+    case class Suspend[F[_], A](s: F[A]) extends Free[F, A]
+
+    case class FlatMap[F[_], A, B](s: Free[F, A], f: A => Free[F, B]) extends Free[F, B]
+
+    // Exercise 1: Implement the free monad
+    def freeMonad[F[_]]: Monad[({ type f[a] = Free[F, a] })#f] =
+      new Monad[({ type f[a] = Free[F, a] })#f] {
+        def unit[A](a: => A) = Return(a)
+        def flatMap[A, B](fa: Free[F, A])(f: A => Free[F, B]) = fa flatMap f
+      }
+  }
+
   def main(args: Array[String]): Unit = {
     println("a")
 //    import IO0._
     import IO1._
-    converter
+
+    // 実行方法
+    converter.run
 
   }
 }
