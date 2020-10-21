@@ -105,12 +105,6 @@ object Chapter13 {
   }
 
   object IO3 {
-
-    /*
-    We can generalize `TailRec` and `Async` to the type `Free`, which is
-    a `Monad` for any choice of `F`.
-     */
-
     sealed trait Free[F[_], A] {
       def flatMap[B](f: A => Free[F, B]): Free[F, B] =
         FlatMap(this, f)
@@ -125,7 +119,7 @@ object Chapter13 {
 
     case class FlatMap[F[_], A, B](s: Free[F, A], f: A => Free[F, B]) extends Free[F, B]
 
-    // Exercise 1: Implement the free monad
+    // Exercise 13.1
     def freeMonad[F[_]]: Monad[({ type f[a] = Free[F, a] })#f] =
       new Monad[({ type f[a] = Free[F, a] })#f] {
         def unit[A](a: => A) = Return(a)
