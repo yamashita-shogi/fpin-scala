@@ -17,17 +17,28 @@ object work {
     println(dt.getDayOfWeek)
 
     val testDt = new DateTime
-    val a = testDt.withDayOfMonth(2).getDayOfWeek
-    println(a)
-    //    val a = dt.getDayOfWeek
 
-    if (a == 7)
-      println(dt.minusDays(0))
-    else {
-      val s = 7 - a
-      println(s)
-//      println(dt.plusDays(s))
-      println(testDt.minusDays(s))
+    (1 to 30).foreach { i =>
+      // 11/1
+      val a = testDt.withDayOfMonth(i)
+
+      // 11/ほげ の曜日
+      val b = a.getDayOfWeek
+      //    println(a)
+      //    val a = dt.getDayOfWeek
+      println(a, "曜日", b)
+
+      if (b == 7) {
+        println("sun")
+        println(a)
+      } else {
+//        val s = 7 - b - 7 //plusDayでやりたいならマイナスを作るこれ
+//        println(s)
+//        println(a.plusDays(s))
+        println(a.minusDays(b)) //minusDayでやりたいなら曜日の数字をそのまま引けばいいのでこれ
+      }
+
+      println("-----")
     }
 
   }
