@@ -332,7 +332,7 @@ object Chapter12 {
 //  }
 
   def main(args: Array[String]): Unit = {
-    println("a")
+    println("work")
 
 //    // Streamのリストから、Streamをリストにまとめたものにする
 //    println(

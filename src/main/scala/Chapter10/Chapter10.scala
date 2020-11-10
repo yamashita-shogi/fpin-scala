@@ -274,7 +274,7 @@ object Chapter10 {
 //    val m3 = M.op(m1, m2)
 //    println(m3)
 
-    println(bag(Vector("a", "rose", "is", "a", "rose")))
+    println(bag(Vector("work", "rose", "is", "work", "rose")))
 
   }
 }

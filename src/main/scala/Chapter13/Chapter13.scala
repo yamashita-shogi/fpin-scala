@@ -1,8 +1,9 @@
 package Chapter13
 
+import java.nio.channels.AsynchronousFileChannel
+
 import Chapter11.Chapter11.Monad
-import fpinscala.parallelism.Par
-import fpinscala.parallelism.Par.Par
+import parallelism.Par
 
 import scala.io.StdIn.readLine
 
@@ -110,6 +111,8 @@ object Chapter13 {
 //    type TailRec[A] = Free[Function0,A]
 //    type Async[A] = Free[Par,A]
 
+    import fpinscala.parallelism.Nonblocking.Par
+
     // Exercise 13.1
     sealed trait Free[F[_], A] {
       def flatMap[B](f: A => Free[F, B]): Free[F, B] =
@@ -170,7 +173,6 @@ object Chapter13 {
 
       // このConsole[A]をFunction0[A]として解釈。
       def toThunk: () => A
-
     }
     case object ReadLine extends Console[Option[String]] {
       def toPar = Par.lazyUnit(run)
@@ -187,6 +189,7 @@ object Chapter13 {
       def toThunk = () => println(line)
     }
 
+    // リスト13-16
     object Console {
       type ConsoleIO[A] = Free[Console, A]
 
@@ -209,6 +212,7 @@ object Chapter13 {
     val consoleToPar =
       new (Console ~> Par) { def apply[A](a: Console[A]) = a.toPar }
 
+    // リスト13-18
     def runFree[F[_], G[_], A](free: Free[F, A])(t: F ~> G)(implicit G: Monad[G]): G[A] =
       step(free) match {
         case Return(a)              => G.unit(a)
@@ -217,6 +221,7 @@ object Chapter13 {
         case _                      => sys.error("Impossible; `step` eliminates these cases")
       }
 
+    // リスト13-20
     // runConsoleFunction0 と runConsolePar のための implicit val
     implicit val function0Monad = new Monad[Function0] {
       def unit[A](a: => A) = () => a
@@ -236,12 +241,59 @@ object Chapter13 {
     def runConsolePar[A](a: Free[Console, A]): Par[A] =
       runFree[Console, Par, A](a)(consoleToPar)
 
+    // exercise 13.4
+    // 模範
+    def translate[F[_], G[_], A](f: Free[F, A])(fg: F ~> G): Free[G, A] = {
+      type FreeG[A] = Free[G, A]
+      val t = new (F ~> FreeG) {
+        def apply[A](a: F[A]): Free[G, A] = Suspend { fg(a) }
+      }
+      runFree(f)(t)(freeMonad[G])
+    }
+
+    def runConsole[A](a: Free[Console, A]): A =
+      runTrampoline {
+        translate(a)(new (Console ~> Function0) {
+          def apply[A](c: Console[A]) = c.toThunk
+        })
+      }
+
+    // https://docs.oracle.com/javase/7/docs/api/java/nio/package-summary.html
+    // https://docs.oracle.com/javase/7/docs/api/java/nio/channels/AsynchronousFileChannel.html
+    // exercise 13.5
+    // 模範
+    // Par.async 以下から持ってくれば通る状態
+    // https://github.com/fpinscala/fpinscala/blob/master/answers/src/main/scala/fpinscala/parallelism/Nonblocking.scala
+    import java.nio._
+    import java.nio.channels._
+    def read(file: AsynchronousFileChannel,
+             fromPosition: Long,
+             numBytes: Int): Par[Either[Throwable, Array[Byte]]] =
+      Par.async { (cb: Either[Throwable, Array[Byte]] => Unit) =>
+        val buf = ByteBuffer.allocate(numBytes)
+        file.read(
+          buf,
+          fromPosition,
+          (),
+          new CompletionHandler[Integer, Unit] {
+            def completed(bytesRead: Integer, ignore: Unit) = {
+              val arr = new Array[Byte](bytesRead)
+              buf.slice.get(arr, 0, bytesRead)
+              cb(Right(arr))
+            }
+            def failed(err: Throwable, ignore: Unit) =
+              cb(Left(err))
+          }
+        )
+      }
   }
 
   def main(args: Array[String]): Unit = {
-    println("a")
+    println("work")
 //    import IO0._
     import IO1._
+    import IO2a._
+    import IO3._
 
     // 実行方法
     converter.run
